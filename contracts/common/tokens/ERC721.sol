@@ -8,7 +8,9 @@ import {IERC165} from "../IERCS/IERC165.sol";
 import {ERC721Utils} from "../utils/ERC721.sol";
 
 contract ERC721 {
-    uint256 private current_token_id;
+    bool private reentrancyLock = false;
+
+    uint256 private current_tokenId;
     address private contract_owner;
     string private token_name;
     string private token_symbol;
@@ -19,7 +21,7 @@ contract ERC721 {
     mapping (uint token_id => address approved) private token_approvals;
     mapping (address holder => mapping(address approved => bool status)) private holder_approvals;
 
-    mapping (uint token_id => address holder) private holders;
+    mapping (uint token_id => address holder) private tokens;
     mapping (address holder => uint total_tokens_holding) private balances;
 
 
@@ -56,9 +58,21 @@ contract ERC721 {
         _;
     }
 
-    modifier is_holder(address _from, uint _token_id) virtual {
-        require(holders[_token_id] == _from, "is_holder error: Token does not belong to _from address");
+    modifier is_holder(address _from, uint256 _tokenId) virtual {
+        require(tokens[_tokenId] == _from, "is_holder error: Token does not belong to _from address");
         _;
+    }
+
+    modifier token_exists(uint256 _tokenId) {
+        require(tokens[_tokenId] != address(0));
+        _;
+    }
+
+    modifier nonReentrant() {
+        require(!reentrancyLock, "nonReentrant Error: reentrant call");
+        reentrancyLock = true;
+        _;
+        reentrancyLock = false;
     }
 
     constructor(string memory _token_name, string memory _token_symbol,  uint _max_supply) {
@@ -84,28 +98,33 @@ contract ERC721 {
         return balances[_owner];
     }
     function ownerOf(uint256 _tokenId) external virtual view returns (address) {
-        return holders[_tokenId];
+        return tokens[_tokenId];
     }
 
     function transferFrom(address _from, address _to, uint256 _tokenId) external virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId) is_holder(_from, _tokenId) {
         _transfer(_from, _to, _tokenId);
-
         emit Transfer(_from, _to, _tokenId);
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId){
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId) {
         safeTransferFrom(_from, _to, _tokenId, "");
     }
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId){
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId) nonReentrant {
         _transfer(_from, _to, _tokenId);
         ERC721Utils.CallOnReceived(msg.sender, address(0), _to, _tokenId, _data);
     }
 
-    function approve(address _approved, uint256 _tokenId) external virtual {
+    function approve(address _approved, uint256 _tokenId) external virtual is_holder(msg.sender, _tokenId) token_exists(_tokenId){
         token_approvals[_tokenId] = _approved;
+        emit Approval(msg.sender, _approved, _tokenId);
     }
 
-    function unapprove(address _unapproved, uint256 _tokenId) external virtual {
+    function is_approved(address _operator, uint256 _tokenId) public view returns(bool) {
+        return token_approvals[_tokenId] == _operator;
+    }
+
+    function unapprove(uint256 _tokenId) external virtual is_holder(msg.sender, _tokenId) token_exists(_tokenId) {
+        
         token_approvals[_tokenId] = address(0);
     }
 
@@ -140,16 +159,16 @@ contract ERC721 {
     }
 
     function _mint(address _to) internal virtual returns (uint256 token_id) {
-        require(max_supply == 0 || current_token_id < max_supply, "Mint error: Above max supply limit");
+        require(max_supply == 0 || current_tokenId < max_supply, "Mint error: Above max supply limit");
 
-        current_token_id += 1;
+        current_tokenId += 1;
 
-        holders[current_token_id] = _to;
+        tokens[current_tokenId] = _to;
         balances[_to] += 1;
         
         current_supply += 1;
 
-        emit Transfer(address(0), _to, current_token_id);
+        emit Transfer(address(0), _to, current_tokenId);
 
         return current_supply;
     }
@@ -164,16 +183,17 @@ contract ERC721 {
         ERC721Utils.CallOnReceived(msg.sender, address(0), to, token_id, data);
     }
 
-    function _transfer(address _from, address _to, uint _token_id) internal virtual{
+    function _transfer(address _from, address _to, uint _tokenId) internal virtual{
         require(_from != address(0));
-        require(holders[_token_id] == _from);
+        require(tokens[_tokenId] == _from);
         require(_from != _to);
 
-        holders[_token_id] = _to;
+        tokens[_tokenId] = _to;
         balances[_from] -= 1;
         balances[_to] += 1;
-
-        emit Transfer(_from, _to, _token_id);
+        token_approvals[_tokenId] = address(0);
+        
+        emit Transfer(_from, _to, _tokenId);
     }
 
     function update_admin_address(address admin_addr, bool active) is_owner(msg.sender) virtual public {

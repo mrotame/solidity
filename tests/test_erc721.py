@@ -164,7 +164,54 @@ class TestErc721(TestCase):
             self.assertEqual(token.balanceOf(wt.Address(2)), 0)
 
     def test_approve(self):
-        pass
+        with get_token() as token:
+            token_id = token.mint(wt.Address(1)).events[0]._tokenId
+            token.approve(wt.Address(2), token_id, from_=wt.Address(1))
+
+            self.assertTrue(token.is_approved(wt.Address(2), token_id))
+
+            token.approve(wt.Address(3), token_id, from_=wt.Address(1))
+
+            with wt.must_revert():
+                token.approve(wt.Address(4), token_id, from_=wt.Address(4))
+
+            self.assertTrue(token.is_approved(wt.Address(3), token_id))
+
+            self.assertFalse(token.is_approved(wt.Address(2), token_id))
+
+    def test_approval_for_all(self):
+        with get_token() as token:
+            tokens = []
+            for _ in range(3):
+                tokens.append(token.mint(wt.Address(1)).events[0]._tokenId)
+
+            token.setApprovalForAll(wt.Address(2), True, from_=wt.Address(1))
+            token.setApprovalForAll(wt.Address(3), True, from_=wt.Address(1))
+
+            self.assertTrue(token.isApprovedForAll(wt.Address(1), wt.Address(2)))
+            self.assertTrue(token.isApprovedForAll(wt.Address(1), wt.Address(3)))
+            self.assertFalse(token.isApprovedForAll(wt.Address(1), wt.Address(4)))
+
+            token.transferFrom(
+                wt.Address(1), wt.Address(2), tokens[0], from_=wt.Address(2)
+            )
+            token.transferFrom(
+                wt.Address(1), wt.Address(3), tokens[1], from_=wt.Address(3)
+            )
+
+            with wt.must_revert():
+                token.transferFrom(
+                    wt.Address(1), wt.Address(4), tokens[2], from_=wt.Address(4)
+                )
+
+            self.assertEqual(token.balanceOf(wt.Address(1)), 1)
+            self.assertEqual(token.balanceOf(wt.Address(2)), 1)
+            self.assertEqual(token.balanceOf(wt.Address(3)), 1)
+            self.assertEqual(token.balanceOf(wt.Address(4)), 0)
+
+            self.assertEqual(token.ownerOf(tokens[0]), wt.Address(2))
+            self.assertEqual(token.ownerOf(tokens[1]), wt.Address(3))
+            self.assertEqual(token.ownerOf(tokens[2]), wt.Address(1))
 
     def test_admin_address(self):
         with get_token() as token:
