@@ -4,6 +4,7 @@
 pragma solidity ^0.8.24;
 
 import {ERC20} from "./common/tokens/ERC20.sol";
-contract ArcaneWood is ERC20("Arcane Wood", "ARKW", 18, 0){
-   
+contract ArcaneWood is ERC20{
+   constructor(address[] memory _admins) ERC20("Arcane Wood", "ARW", 18, 0, _admins) {
+   }
 }

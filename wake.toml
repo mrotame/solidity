@@ -7,6 +7,10 @@ exclude = []
 ignore_paths = ["venv", ".venv", "test"]
 exclude_paths = ["node_modules", "lib", "script"]
 
+[deployment]
+confirm_transactions = false
+silent = false
+
 [testing]
 cmd = "anvil"
 

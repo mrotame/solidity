@@ -6,28 +6,32 @@ import {IERC20} from "../IERCS/IERC20.sol";
 import {IERC165} from "../IERCS/IERC165.sol";
 
 contract ERC20 {
-    address private token_owner;
-    string private token_name;
-    string private token_symbol;
-    uint8 private token_decimals;
-    uint256 private max_supply;
-    uint256 private current_supply;
+    address internal token_owner;
+    string internal token_name;
+    string internal token_symbol;
+    uint8 internal token_decimals;
+    uint256 internal max_supply;
+    uint256 internal current_supply;
 
     mapping (address holder => uint256 balance) balances;
-    mapping(address holder => mapping(address spender => uint256)) private _allowances;
-    mapping(address admin_addr => bool status) private admin_addrs;
+    mapping(address holder => mapping(address spender => uint256)) internal _allowances;
+    mapping(address admin_addr => bool status) internal admin_addrs;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
     event Mint(address indexed _to, uint256 _value);
     event Burn(address indexed _from, uint256 _value);
 
-    constructor(string memory _token_name, string memory _token_symbol, uint8 _token_decimals, uint _max_supply) {
+    constructor(string memory _token_name, string memory _token_symbol, uint8 _token_decimals, uint _max_supply, address[] memory _admins) {
         token_owner = msg.sender;
         token_name = _token_name;
         token_symbol = _token_symbol;
         token_decimals = _token_decimals;
         max_supply = _max_supply;
+
+        for (uint i = 0; i < _admins.length; i++) {
+            admin_addrs[_admins[i]] = true;
+        }
     }
 
     modifier is_owner(address addr) virtual {
