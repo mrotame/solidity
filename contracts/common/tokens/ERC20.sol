@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-import {Utils} from  "./utils.sol";
-
 pragma solidity ^0.8.25;
+
+import {IERC20} from "../IERCS/IERC20.sol";
+import {IERC165} from "../IERCS/IERC165.sol";
 
 contract ERC20 {
     address private token_owner;
@@ -12,9 +13,9 @@ contract ERC20 {
     uint256 private max_supply;
     uint256 private current_supply;
 
-    mapping (address => uint256) balances;
-    mapping(address account => mapping(address spender => uint256)) private _allowances;
-    mapping(address => bool) private admin_addrs;
+    mapping (address holder => uint256 balance) balances;
+    mapping(address holder => mapping(address spender => uint256)) private _allowances;
+    mapping(address admin_addr => bool status) private admin_addrs;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -59,8 +60,8 @@ contract ERC20 {
         return current_supply;
     }
 
-    function balanceOf(address _from) virtual public view returns (uint256 balance) {
-        return balances[_from];
+    function balanceOf(address _holder) virtual public view returns (uint256 balance) {
+        return balances[_holder];
     }
     function transfer(address _to, uint256 _value) virtual public returns (bool success) {
         return transferFrom(msg.sender, _to, _value);
@@ -139,6 +140,10 @@ contract ERC20 {
         current_supply -= _amount;
         balances[_from] -= _amount;
         emit Burn(_from, _amount);
+    }
+
+    function supportsInterface(bytes4 interfaceID) external pure returns (bool) {
+        return (type(IERC20).interfaceId == interfaceID || type(IERC165).interfaceId == interfaceID);
     }
 }
 

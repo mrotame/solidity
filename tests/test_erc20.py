@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 import wake.testing as wt
 
-from pytypes.contracts.common.erc20 import ERC20
+from pytypes.contracts.common.tokens.ERC20 import ERC20
 
 
 @contextmanager
@@ -230,3 +230,13 @@ class TestErc20(TestCase):
             self.assertEqual(token.balanceOf(wt.Address(1)), token_half_amount)
             self.assertEqual(token.balanceOf(wt.Address(2)), 0)
             self.assertEqual(token.balanceOf(wt.Address(3)), token_half_amount)
+
+    def test_max_supply(self):
+        max_amount = randint(100, 10000)
+        with wt.default_chain.connect():
+            token = ERC20.deploy("test_coin", "tstc", 18, max_amount)
+
+            with wt.must_revert():
+                token.mint(wt.Address(1), max_amount + 1)
+
+            self.assertEqual(token.balanceOf(wt.Address(1)), 0)

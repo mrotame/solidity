@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.25;
 
-import {ERC20} from "./common/erc20.sol";
+import {ERC20} from "./common/tokens/ERC20.sol";
 contract ArcaneWood is ERC20("Arcane Wood", "ARKW", 18, 0){
    
 }
