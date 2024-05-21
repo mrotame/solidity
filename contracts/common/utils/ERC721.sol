@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.24;
 
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
+
 import {IERC721Receiver} from "../IERCS/IERC721.sol";
 
 library ERC721Utils {
@@ -25,5 +28,14 @@ library ERC721Utils {
                 revert(add(32, reason), mload(reason))
             }
         }
+    }
+
+    function jsonToBase64(bytes memory dataURI) pure internal returns(string memory) {       
+        return string(
+            abi.encodePacked(
+                "data:application/json;base64,",
+                Base64.encode(dataURI)
+            )
+        );
     }
 }

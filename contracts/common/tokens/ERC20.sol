@@ -69,7 +69,6 @@ contract ERC20 {
     }
     function transfer(address _to, uint256 _value) virtual public returns (bool success) {
         return transferFrom(msg.sender, _to, _value);
- 
     }
 
     function transferFrom(address _from, address _to, uint256 _value) virtual public returns (bool success) {

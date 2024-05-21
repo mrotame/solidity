@@ -2,27 +2,31 @@
 
 pragma solidity ^0.8.24;
 
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
+
 import {IERC721} from "../IERCS/IERC721.sol";
 import {IERC165} from "../IERCS/IERC165.sol";
 
 import {ERC721Utils} from "../utils/ERC721.sol";
 
 contract ERC721 {
-    bool private reentrancyLock = false;
+    bool internal reentrancyLock = false;
 
-    uint256 private current_tokenId;
-    address private contract_owner;
-    string private token_name;
-    string private token_symbol;
-    uint256 private max_supply;
-    uint256 private current_supply;
-    mapping (address admin_addr => bool status) private admin_addrs;
+    uint256 internal current_tokenId;
+    address internal contract_owner;
+    string internal token_name;
+    string internal token_symbol;
+    uint256 internal max_supply;
+    uint256 internal current_supply;
 
-    mapping (uint token_id => address approved) private token_approvals;
-    mapping (address holder => mapping(address approved => bool status)) private holder_approvals;
+    mapping (address admin_addr => bool status) internal admin_addrs;
 
-    mapping (uint token_id => address holder) private tokens;
-    mapping (address holder => uint total_tokens_holding) private balances;
+    mapping (uint token_id => address approved) internal token_approvals;
+    mapping (address holder => mapping(address approved => bool status)) internal holder_approvals;
+
+    mapping (uint token_id => address holder) internal tokens;
+    mapping (address holder => uint total_tokens_holding) internal balances;
 
 
     event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
@@ -63,34 +67,38 @@ contract ERC721 {
         _;
     }
 
-    modifier token_exists(uint256 _tokenId) {
+    modifier token_exists(uint256 _tokenId) virtual{
         require(tokens[_tokenId] != address(0));
         _;
     }
 
-    modifier nonReentrant() {
+    modifier nonReentrant() virtual {
         require(!reentrancyLock, "nonReentrant Error: reentrant call");
         reentrancyLock = true;
         _;
         reentrancyLock = false;
     }
 
-    constructor(string memory _token_name, string memory _token_symbol,  uint _max_supply) {
+    constructor(string memory _token_name, string memory _token_symbol,  uint _max_supply, address[] memory _admins) {
         contract_owner = msg.sender;
         token_name = _token_name;
         token_symbol = _token_symbol;
         max_supply = _max_supply;
+
+        for (uint i=0; i < _admins.length; i++) {
+            admin_addrs[_admins[i]] = true;
+        }
     }
 
-    function name() external view returns(string memory) {
+    function name() external view virtual returns(string memory)  {
         return token_name;
     }
 
-    function symbol() external view returns(string memory) {
+    function symbol() external view virtual returns(string memory) {
         return token_symbol;
     }
 
-    function total_supply() external view returns (uint) {
+    function total_supply() external view virtual returns (uint) {
         return current_supply;
     }
 
@@ -100,6 +108,16 @@ contract ERC721 {
     function ownerOf(uint256 _tokenId) external virtual view returns (address) {
         return tokens[_tokenId];
     }
+
+    // function contractURI() public view virtual returns (string memory){
+    //     bytes memory _dataURI = abi.encodePacked(
+    //         "data:application/json;utf8,",
+    //         '{',
+    //         '}'
+    //     );
+
+    //     return string(_dataURI);
+    // }
 
     function transferFrom(address _from, address _to, uint256 _tokenId) external virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId) is_holder(_from, _tokenId) {
         _transfer(_from, _to, _tokenId);
@@ -119,7 +137,7 @@ contract ERC721 {
         emit Approval(msg.sender, _approved, _tokenId);
     }
 
-    function is_approved(address _operator, uint256 _tokenId) public view returns(bool) {
+    function is_approved(address _operator, uint256 _tokenId) public view virtual returns(bool) {
         return token_approvals[_tokenId] == _operator;
     }
 
@@ -139,11 +157,11 @@ contract ERC721 {
         return holder_approvals[_holder][_operator];
     }
 
-    function supportsInterface(bytes4 interfaceID) external pure returns (bool) {
+    function supportsInterface(bytes4 interfaceID) external pure virtual returns (bool){
         return (type(IERC721).interfaceId == interfaceID || type(IERC165).interfaceId == interfaceID);
     }
 
-    function mint(address _to) public is_owner_or_admin(msg.sender) returns (bool success) {
+    function mint(address _to) public is_owner_or_admin(msg.sender) virtual returns (bool success) {
         _mint(_to);
         return true;
     }
@@ -173,7 +191,7 @@ contract ERC721 {
         return current_supply;
     }
 
-    function _safeMint(address to) internal {
+    function _safeMint(address to) internal virtual {
         _safeMint(to, "");
     }
 
@@ -200,7 +218,7 @@ contract ERC721 {
         admin_addrs[admin_addr] = active;
     }
 
-    function is_admin(address _from) public view returns(bool){
+    function is_admin(address _from) public view virtual returns(bool){
         return admin_addrs[_from];
     }
 

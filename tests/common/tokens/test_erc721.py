@@ -2,6 +2,8 @@ import typing as t
 from random import randint
 from unittest import TestCase
 from contextlib import contextmanager
+import json
+import base64
 
 import wake.testing as wt
 
@@ -212,6 +214,20 @@ class TestErc721(TestCase):
             self.assertEqual(token.ownerOf(tokens[0]), wt.Address(2))
             self.assertEqual(token.ownerOf(tokens[1]), wt.Address(3))
             self.assertEqual(token.ownerOf(tokens[2]), wt.Address(1))
+
+    def test_get_token_uri_metadata(self):
+        with get_token() as token:
+            token_id = token.mint(wt.Address(1)).events[0]._tokenId
+            expected_json = {"name": token_id}
+
+            token_metadata_raw = token.getTokenURI(token_id)
+            json_decoded = json.loads(
+                base64.b64decode(token_metadata_raw.split(",")[1]).decode("utf-8")
+            )
+
+            self.assertIn("data:application/json;base64", token_metadata_raw)
+
+            self.assertEqual(expected_json, json_decoded)
 
     def test_admin_address(self):
         with get_token() as token:
