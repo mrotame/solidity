@@ -2,11 +2,12 @@
 exclude_paths = ["node_modules", "venv", ".venv", "lib", "script", "test"]
 include_paths = ["node_modules"]
 remappings = [
-    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
-    "ds-test/=lib/openzeppelin-contracts/lib/forge-std/lib/ds-test/src/",
-    "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
-    "forge-std/=lib/openzeppelin-contracts/lib/forge-std/src/",
-    "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+"@chainlink/contracts/=lib/chainlink-develop/contracts/",
+"@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+"ds-test/=lib/openzeppelin-contracts/lib/forge-std/lib/ds-test/src/",
+"erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+"forge-std/=lib/openzeppelin-contracts/lib/forge-std/src/",
+"openzeppelin-contracts/=lib/openzeppelin-contracts/"
 ]
 
 [detectors]

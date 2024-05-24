@@ -4,9 +4,9 @@ pragma solidity ^0.8.24;
 
 import {IERC20} from "../IERCS/IERC20.sol";
 import {IERC165} from "../IERCS/IERC165.sol";
+import {SecuredContract} from "../securedContract/SecuredContract.sol";
 
-contract ERC20 {
-    address internal token_owner;
+contract ERC20 is SecuredContract {
     string internal token_name;
     string internal token_symbol;
     uint8 internal token_decimals;
@@ -15,7 +15,6 @@ contract ERC20 {
 
     mapping (address holder => uint256 balance) balances;
     mapping(address holder => mapping(address spender => uint256)) internal _allowances;
-    mapping(address admin_addr => bool status) internal admin_addrs;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -23,7 +22,6 @@ contract ERC20 {
     event Burn(address indexed _from, uint256 _value);
 
     constructor(string memory _token_name, string memory _token_symbol, uint8 _token_decimals, uint _max_supply, address[] memory _admins) {
-        token_owner = msg.sender;
         token_name = _token_name;
         token_symbol = _token_symbol;
         token_decimals = _token_decimals;
@@ -32,21 +30,6 @@ contract ERC20 {
         for (uint i = 0; i < _admins.length; i++) {
             admin_addrs[_admins[i]] = true;
         }
-    }
-
-    modifier is_owner(address addr) virtual {
-        require(addr == token_owner, "is_owner error: Not authorized");
-        _;
-    }
-
-    modifier is_owner_or_admin(address addr) virtual {
-        require(addr == token_owner || admin_addrs[addr], "is_owner_or_admin error: Not Authorized");
-        _;
-    }
-
-    modifier is_owner_self_or_admin(address requester_addr, address to_address) virtual {
-        require(requester_addr == token_owner || requester_addr == to_address || admin_addrs[requester_addr], "is_owner_self_or_admin error: Not Authorized");
-        _;
     }
 
     function name() virtual public view returns (string memory) {
@@ -104,21 +87,13 @@ contract ERC20 {
         return _allowances[_from][_spender];
     }
 
-    function is_admin(address _from) virtual public view returns(bool) {
-        return admin_addrs[_from];
-    }
-
     function _spend_allowance(address _from, address _spender, uint256 _value) virtual internal {
         require(allowance(_from, msg.sender) >= _value, "Allowance error: Amount approved is not enough");
 
         _allowances[_from][_spender] -= _value;
     }
 
-    function update_admin_address(address admin_addr, bool active) is_owner(msg.sender) virtual public {
-        admin_addrs[admin_addr] = active;
-    }
-
-    function mint(address _to, uint _amount) is_owner_or_admin(msg.sender) virtual public {
+    function mint(address _to, uint _amount) isOwnerOrAdmin(msg.sender) virtual public {
         require(_to != address(0), "mint error: invalid _to address");
         if (max_supply >0) {
             require(current_supply + _amount <= max_supply);
@@ -133,7 +108,7 @@ contract ERC20 {
         emit Mint(_to, _amount);
     }
 
-    function burn(address _from, uint _amount) is_owner_self_or_admin(msg.sender, _from) virtual public {
+    function burn(address _from, uint _amount) isOwnerOrSelfOrAdmin(msg.sender, _from) virtual public {
         require(_from != address(0), "burn error: invalid _from address");
         require(balances[_from] >= _amount, "burn error: not enough balance");
         _burn(_from, _amount);

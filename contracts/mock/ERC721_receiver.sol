@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.24;
 
-import {IERC721} from "../IERCS/IERC721.sol";
+import {IERC721} from "../common/IERCS/IERC721.sol";
 
 contract ERC721Receiver {
     bool public token_received;

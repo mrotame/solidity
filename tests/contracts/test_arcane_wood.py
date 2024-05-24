@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 import wake.testing as wt
 
-from pytypes.contracts.ArcaneWood import ArcaneWood
+from pytypes.contracts.game.ArcaneWood import ArcaneWood
 
 
 @contextmanager
@@ -16,8 +16,8 @@ def get_token() -> t.Generator[ArcaneWood, ArcaneWood, ArcaneWood]:
 
 
 class TestArcaneWood(TestCase):
-    def get_token_owner(self, token: ArcaneWood) -> wt.Address:
-        return wt.read_storage_variable(token, "token_owner")
+    def get_contractOwner(self, token: ArcaneWood) -> wt.Address:
+        return wt.read_storage_variable(token, "contractOwner")
 
     def test_constructor(self):
         with get_token() as token:
@@ -41,7 +41,7 @@ class TestArcaneWood(TestCase):
 
             self.assertEqual(token.balanceOf(wt.Address(2)), token_amount - tax_amount)
             self.assertEqual(token.balanceOf(wt.Address(1)), 0)
-            self.assertEqual(token.balanceOf(self.get_token_owner(token)), tax_amount)
+            self.assertEqual(token.balanceOf(self.get_contractOwner(token)), tax_amount)
 
     def test_transfer_from_fees_admin(self):
         with get_token() as token:
@@ -53,7 +53,7 @@ class TestArcaneWood(TestCase):
             token.transfer(wt.Address(2), token_amount, from_=wt.Address(1))
 
             self.assertEqual(token.balanceOf(wt.Address(2)), token_amount)
-            self.assertEqual(token.balanceOf(self.get_token_owner(token)), 0)
+            self.assertEqual(token.balanceOf(self.get_contractOwner(token)), 0)
 
     def test_transfer_from_fees_ex_admin(self):
         with get_token() as token:
@@ -69,4 +69,4 @@ class TestArcaneWood(TestCase):
             token.transfer(wt.Address(2), token_amount, from_=wt.Address(1))
 
             self.assertEqual(token.balanceOf(wt.Address(2)), token_amount - tax_amount)
-            self.assertEqual(token.balanceOf(self.get_token_owner(token)), tax_amount)
+            self.assertEqual(token.balanceOf(self.get_contractOwner(token)), tax_amount)

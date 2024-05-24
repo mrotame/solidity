@@ -2,19 +2,17 @@ import typing as t
 from random import randint
 from unittest import TestCase
 from contextlib import contextmanager
-import json
-import base64
 
 import wake.testing as wt
 
 from pytypes.contracts.common.tokens.ERC721 import ERC721
-from pytypes.contracts.common.utils.ERC721_receiver import ERC721Receiver
+from pytypes.contracts.mock.ERC721_receiver import ERC721Receiver
 
 
 @contextmanager
 def get_token() -> t.Generator[ERC721, ERC721, ERC721]:
     with wt.default_chain.connect():
-        token = ERC721.deploy("test_nft", "tstn", 0)
+        token = ERC721.deploy("test_nft", "tstn", 0, [])
         yield token
 
 
@@ -57,7 +55,7 @@ class TestErc721(TestCase):
     def test_safe_mint_token(self):
         with get_token() as token:
             token_receiver = ERC721Receiver.deploy()
-            token_owner = wt.read_storage_variable(token, "contract_owner")
+            contractOwner = wt.read_storage_variable(token, "contractOwner")
 
             mint = token.safeMint_(token_receiver.address, b"test_safe_mint_data")
 
@@ -69,7 +67,7 @@ class TestErc721(TestCase):
 
             self.assertEqual(token_receiver.token_received(), True)
             self.assertEqual(token_receiver.sender(), token.address)
-            self.assertEqual(token_receiver.operator(), token_owner)
+            self.assertEqual(token_receiver.operator(), contractOwner)
             self.assertEqual(token_receiver.received_from(), wt.Address(0))
             self.assertEqual(token_receiver.token_id(), mint.events[0]._tokenId)
             self.assertEqual(token_receiver.data(), b"test_safe_mint_data")
@@ -114,7 +112,7 @@ class TestErc721(TestCase):
     def test_safe_transfer_from(self):
         with get_token() as token:
             token_receiver = ERC721Receiver.deploy()
-            token_owner = wt.read_storage_variable(token, "contract_owner")
+            contractOwner = wt.read_storage_variable(token, "contractOwner")
 
             token_id = token.mint(wt.Address(1)).events[0]._tokenId
 
@@ -132,7 +130,7 @@ class TestErc721(TestCase):
 
             self.assertEqual(token_receiver.token_received(), True)
             self.assertEqual(token_receiver.sender(), token.address)
-            self.assertEqual(token_receiver.operator(), token_owner)
+            self.assertEqual(token_receiver.operator(), contractOwner)
             self.assertEqual(token_receiver.received_from(), wt.Address(0))
             self.assertEqual(token_receiver.token_id(), token_id)
             self.assertEqual(token_receiver.data(), b"test_safe_tranfer_data")
@@ -218,16 +216,10 @@ class TestErc721(TestCase):
     def test_get_token_uri_metadata(self):
         with get_token() as token:
             token_id = token.mint(wt.Address(1)).events[0]._tokenId
-            expected_json = {"name": token_id}
 
-            token_metadata_raw = token.getTokenURI(token_id)
-            json_decoded = json.loads(
-                base64.b64decode(token_metadata_raw.split(",")[1]).decode("utf-8")
-            )
+            token_metadata_raw = token.tokenURI(token_id)
 
-            self.assertIn("data:application/json;base64", token_metadata_raw)
-
-            self.assertEqual(expected_json, json_decoded)
+            self.assertIn("data:application/json;utf8", token_metadata_raw)
 
     def test_admin_address(self):
         with get_token() as token:

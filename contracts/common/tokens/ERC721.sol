@@ -8,19 +8,16 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 import {IERC721} from "../IERCS/IERC721.sol";
 import {IERC165} from "../IERCS/IERC165.sol";
 
-import {ERC721Utils} from "../utils/ERC721.sol";
+import {ERC721Utils} from "../utils/ERC721Utils.sol";
 
-contract ERC721 {
-    bool internal reentrancyLock = false;
+import {SecuredContract} from "../securedContract/SecuredContract.sol";
 
+contract ERC721 is SecuredContract{
     uint256 internal current_tokenId;
-    address internal contract_owner;
     string internal token_name;
     string internal token_symbol;
     uint256 internal max_supply;
     uint256 internal current_supply;
-
-    mapping (address admin_addr => bool status) internal admin_addrs;
 
     mapping (uint token_id => address approved) internal token_approvals;
     mapping (address holder => mapping(address approved => bool status)) internal holder_approvals;
@@ -33,34 +30,6 @@ contract ERC721 {
     event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
-    modifier is_owner(address addr) virtual {
-        require(addr == contract_owner, "is_owner error: Not authorized");
-        _;
-    }
-
-    modifier is_owner_or_admin(address addr) virtual {
-        require(addr == contract_owner || admin_addrs[addr], "is_owner_or_admin error: Not Authorized");
-        _;
-    }
-
-    modifier is_owner_self_or_admin(address requester_addr, address from_address) virtual {
-        require(
-            requester_addr == contract_owner ||
-            requester_addr == from_address ||
-            admin_addrs[requester_addr], "is_owner_self_or_admin error: Not Authorized");
-        _;
-    }
-
-    modifier is_owner_self_admin_or_approved(address requester_addr, address from_address, uint token_id) virtual {
-        require(
-            requester_addr == contract_owner ||
-            requester_addr == from_address ||
-            admin_addrs[requester_addr] ||
-            token_approvals[token_id] == requester_addr ||
-            holder_approvals[from_address][requester_addr]
-            ,"is_owner_self_admin_or_approved error: Not Authorized");
-        _;
-    }
 
     modifier is_holder(address _from, uint256 _tokenId) virtual {
         require(tokens[_tokenId] == _from, "is_holder error: Token does not belong to _from address");
@@ -72,15 +41,20 @@ contract ERC721 {
         _;
     }
 
-    modifier nonReentrant() virtual {
-        require(!reentrancyLock, "nonReentrant Error: reentrant call");
-        reentrancyLock = true;
+    modifier isOwner_self_admin_or_approved(address requester_addr, address from_address, uint token_id) virtual  {
+        require(
+            requester_addr == contractOwner ||
+            requester_addr == from_address ||
+            admin_addrs[requester_addr] ||
+            token_approvals[token_id] == requester_addr ||
+            holder_approvals[from_address][requester_addr]
+            ,"isOwner_self_admin_or_approved error: Not Authorized");
         _;
-        reentrancyLock = false;
     }
+    
 
     constructor(string memory _token_name, string memory _token_symbol,  uint _max_supply, address[] memory _admins) {
-        contract_owner = msg.sender;
+        contractOwner = msg.sender;
         token_name = _token_name;
         token_symbol = _token_symbol;
         max_supply = _max_supply;
@@ -109,25 +83,25 @@ contract ERC721 {
         return tokens[_tokenId];
     }
 
-    // function contractURI() public view virtual returns (string memory){
-    //     bytes memory _dataURI = abi.encodePacked(
-    //         "data:application/json;utf8,",
-    //         '{',
-    //         '}'
-    //     );
+    function tokenURI(uint256 _tokenId) public view virtual returns (string memory) {
+        bytes memory _dataURI = abi.encodePacked(
+            "data:application/json;utf8,",
+            '{',
+            '}'
+        );
 
-    //     return string(_dataURI);
-    // }
+        return string(_dataURI);
+    }
 
-    function transferFrom(address _from, address _to, uint256 _tokenId) external virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId) is_holder(_from, _tokenId) {
+    function transferFrom(address _from, address _to, uint256 _tokenId) external virtual isOwner_self_admin_or_approved(msg.sender, _from, _tokenId) is_holder(_from, _tokenId) {
         _transfer(_from, _to, _tokenId);
         emit Transfer(_from, _to, _tokenId);
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId) {
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public virtual isOwner_self_admin_or_approved(msg.sender, _from, _tokenId) {
         safeTransferFrom(_from, _to, _tokenId, "");
     }
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public virtual is_owner_self_admin_or_approved(msg.sender, _from, _tokenId) nonReentrant {
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public virtual isOwner_self_admin_or_approved(msg.sender, _from, _tokenId) nonReentrant {
         _transfer(_from, _to, _tokenId);
         ERC721Utils.CallOnReceived(msg.sender, address(0), _to, _tokenId, _data);
     }
@@ -161,17 +135,17 @@ contract ERC721 {
         return (type(IERC721).interfaceId == interfaceID || type(IERC165).interfaceId == interfaceID);
     }
 
-    function mint(address _to) public is_owner_or_admin(msg.sender) virtual returns (bool success) {
+    function mint(address _to) public isOwnerOrAdmin(msg.sender) virtual returns (bool success) {
         _mint(_to);
         return true;
     }
 
-    function safeMint(address _to) public virtual is_owner_or_admin(msg.sender) returns (bool success) {
+    function safeMint(address _to) public virtual isOwnerOrAdmin(msg.sender) returns (bool success) {
         _safeMint(_to, "");
         return true;
     }
 
-    function safeMint(address _to, bytes memory _data) public virtual is_owner_or_admin(msg.sender) returns (bool success) {
+    function safeMint(address _to, bytes memory _data) public virtual isOwnerOrAdmin(msg.sender) returns (bool success) {
         _safeMint(_to, _data);
         return true;
     }
@@ -213,13 +187,4 @@ contract ERC721 {
         
         emit Transfer(_from, _to, _tokenId);
     }
-
-    function update_admin_address(address admin_addr, bool active) is_owner(msg.sender) virtual public {
-        admin_addrs[admin_addr] = active;
-    }
-
-    function is_admin(address _from) public view virtual returns(bool){
-        return admin_addrs[_from];
-    }
-
 }

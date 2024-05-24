@@ -3,18 +3,18 @@
 
 pragma solidity ^0.8.24;
 
-import {ERC20} from "./common/tokens/ERC20.sol";
+import {ERC20} from "./ERC20.sol";
    
 
-contract ArcaneWood is ERC20{
+contract ArcaneResource is ERC20{
     uint private tax_fee_percent = 5;
     address private tax_address;
    
-    constructor(address[] memory _admins) ERC20("Arcane Wood", "ARW", 18, 0, _admins) {
-        tax_address = token_owner;
+    constructor(string memory _token_name, string memory _token_symbol, uint8 _decimals, uint _max_supply, address[] memory _admins) ERC20(_token_name, _token_symbol, _decimals, _max_supply, _admins) {
+        tax_address = contractOwner;
    }
 
-    function update_tax_address(address _new_addr) public is_owner(_new_addr){
+    function update_tax_address(address _new_addr) public isOwner(_new_addr){
         tax_address = _new_addr;
     }
 

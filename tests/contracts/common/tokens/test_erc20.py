@@ -11,7 +11,7 @@ from pytypes.contracts.common.tokens.ERC20 import ERC20
 @contextmanager
 def get_token() -> t.Generator[ERC20, ERC20, ERC20]:
     with wt.default_chain.connect():
-        token = ERC20.deploy("test_coin", "tstc", 18, 0)
+        token = ERC20.deploy("test_coin", "tstc", 18, 0, [])
         yield token
 
 
@@ -234,9 +234,10 @@ class TestErc20(TestCase):
     def test_max_supply(self):
         max_amount = randint(100, 10000)
         with wt.default_chain.connect():
-            token = ERC20.deploy("test_coin", "tstc", 18, max_amount)
+            token = ERC20.deploy("test_coin", "tstc", 18, max_amount, [])
+            token.mint(wt.Address(1), max_amount)
 
             with wt.must_revert():
-                token.mint(wt.Address(1), max_amount + 1)
+                token.mint(wt.Address(1), 1)
 
-            self.assertEqual(token.balanceOf(wt.Address(1)), 0)
+            self.assertEqual(token.balanceOf(wt.Address(1)), max_amount)
