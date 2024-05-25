@@ -9,6 +9,9 @@ from pytypes.contracts.oracle.Oracle import Oracle
 
 from pytypes.contracts.mock.VRFCaller import VRFCaller
 
+WEI = 1
+GWEI = 1000000000
+
 
 @contextmanager
 def get_token() -> t.Generator[Oracle, Oracle, Oracle]:
@@ -115,7 +118,19 @@ class TestOracle(TestCase):
             self.assertGreater(i, 0)
 
     def test_last_execution_cost(self):
-        pass
+        rand_min, rand_max = self.get_min_max_randint()
+        rand_num = randint(rand_min, rand_max)
+
+        with get_token() as token:
+            vrf_caller = VRFCaller.deploy(token.address)
+            request = token.generateRandUint(
+                rand_min, rand_max, from_=vrf_caller.address
+            )
+
+            result = token.fulfillRandUintRequest(request.events[0].requestId, rand_num)
+
+            with wt.must_revert():
+                token.generateRandUint(rand_min, rand_max, from_=vrf_caller.address)
 
     def test_pay_for_last_execution(self):
         pass

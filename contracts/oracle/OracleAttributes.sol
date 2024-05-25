@@ -4,10 +4,11 @@ pragma solidity ^0.8.24;
 
 
 contract OracleAttributes {
-    enum RequestTypes { RANDUINT }
-    enum RequestParameterTypes {STRING, INTEGER}
+    enum RequestTypes { RANDUINT_SINGLE, RANDUINT_ARRAY }
     
-    uint lastExecutionCost;
+    uint withdraw_number;
+    uint deposit_number;
+
 
     struct RequestData {
         uint requestId;
@@ -24,4 +25,6 @@ contract OracleAttributes {
     mapping (uint requestId => RequestData) requests;
 
     mapping (RequestTypes => bytes4) fulfillFunctions;
+
+    mapping (address requester => mapping(RequestTypes requestName => uint costGwei) functionCost) lastCostsPerRequester;
 }

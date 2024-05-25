@@ -44,26 +44,30 @@ contract Oracle is OracleModifiers{
     // --------- RandUint Request ---------
 
     // Generate
-    function generateRandUint(uint minNum, uint maxNum) public payable requireslastExecutionCost {
-        RequestData memory request = createRequest(RequestTypes.RANDUINT);
+    function generateSingleRandUint(uint minNum, uint maxNum) public payable requireslastExecutionCost {
+        RequestData memory request = createRequest(RequestTypes.RANDUINT_SINGLE);
 
         emit RandUintParams(request.requestId, maxNum, minNum);
     }
 
-    function generateRandUint(uint minNum, uint maxNum, uint quantityRequired) public payable requireslastExecutionCost {
-        RequestData memory request = createRequest(RequestTypes.RANDUINT);
+    function generateRandUintArray(uint minNum, uint maxNum, uint quantityRequired) public payable requireslastExecutionCost {
+        RequestData memory request = createRequest(RequestTypes.RANDUINT_ARRAY);
 
         emit RandUintParams(request.requestId, maxNum, minNum,quantityRequired);
     }
 
     // Fulfill
-    function fulfillRandUintRequest(uint requestId, uint num) public isOwner(msg.sender) fulfillRequest(requestId){
+    function fulfillSingleRandUintRequest(uint requestId, uint num) public isOwner(msg.sender) fulfillRequest(requestId){
         IRequester(requests[requestId].requester).fulfillRequestRandUint(requestId, num);
     }
 
-    function fulfillRandUintRequest(uint requestId, uint[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId) {
+    function fulfillRandUinArraytRequest(uint requestId, uint[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId) {
         IRequester(requests[requestId].requester).fulfillRequestRandUint(requestId, nums);
     }
     // -------------------------------------------
    
+   function deposit() public payable {
+        deposit_number += 1;
+        emit Deposited()
+   }
 }

@@ -30,4 +30,16 @@ contract OracleEvents is OracleAttributes{
         uint min_num,
         uint quantityRequired
     );
+
+    event Deposited(
+        uint indexed deposit_number,
+        address indexed depositor,
+        uint amount // WEI
+    );
+
+    event Withdrawn(
+        uint indexed withdraw_number,
+        address indexed withdrawer,
+        uint amount // WEI
+    );
 }
