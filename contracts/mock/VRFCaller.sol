@@ -27,14 +27,14 @@ contract VRFCaller is SecuredContract {
         oracle = Oracle(oracleContract);
     }
 
-    function fulfillRequestRandUint(uint _requestId, uint num) public isOracle(msg.sender) {
+    function fulfillRequestSingleRandUint(uint _requestId, uint num) public isOracle(msg.sender) {
         functionCalled = "fulfillRequestRandUint_singleUint";
         requestId = _requestId;
         msgSender = msg.sender;
         randomUint = num;
     }
     
-    function fulfillRequestRandUint(uint _requestId, uint[] memory nums) public isOracle(msg.sender) {
+    function fulfillRequestRandUintArray(uint _requestId, uint[] memory nums) public isOracle(msg.sender) {
         functionCalled = "fulfillRequestRandUint_uintArray";
         requestId = _requestId;
         msgSender = msg.sender;

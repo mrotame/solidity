@@ -14,9 +14,12 @@ GWEI = 1000000000
 
 
 @contextmanager
-def get_token() -> t.Generator[Oracle, Oracle, Oracle]:
+def get_token(allowed_addresses=None) -> t.Generator[Oracle, Oracle, Oracle]:
+    if not allowed_addresses:
+        allowed_addresses = []
+
     with wt.default_chain.connect():
-        token = Oracle.deploy()
+        token = Oracle.deploy(allowed_addresses)
         yield token
 
 
@@ -36,7 +39,9 @@ class TestOracle(TestCase):
 
         with get_token() as token:
             vrf_caller = VRFCaller.deploy(token.address)
-            result = token.generateRandUint(
+            token.updateAllowedAddress(vrf_caller.address, True)
+
+            result = token.generateSingleRandUint(
                 rand_min, rand_max, from_=vrf_caller.address
             )
 
@@ -53,7 +58,9 @@ class TestOracle(TestCase):
 
         with get_token() as token:
             vrf_caller = VRFCaller.deploy(token.address)
-            result = token.generateRandUint_(
+            token.updateAllowedAddress(vrf_caller.address, True)
+
+            result = token.generateRandUintArray(
                 rand_min, rand_max, quantity, from_=vrf_caller.address
             )
 
@@ -71,12 +78,15 @@ class TestOracle(TestCase):
 
         with get_token() as token:
             vrf_caller = VRFCaller.deploy(token.address)
+            token.updateAllowedAddress(vrf_caller.address, True)
 
-            request = token.generateRandUint(
+            request = token.generateSingleRandUint(
                 rand_min, rand_max, from_=vrf_caller.address
             )
 
-            result = token.fulfillRandUintRequest(request.events[0].requestId, rand_num)
+            result = token.fulfillSingleRandUintRequest(
+                request.events[0].requestId, rand_num
+            )
 
             self.assertEqual(
                 vrf_caller.functionCalled(), "fulfillRequestRandUint_singleUint"
@@ -99,12 +109,13 @@ class TestOracle(TestCase):
 
         with get_token() as token:
             vrf_caller = VRFCaller.deploy(token.address)
+            token.updateAllowedAddress(vrf_caller.address, True)
 
-            request = token.generateRandUint_(
+            request = token.generateRandUintArray(
                 rand_min, rand_max, quantity, from_=vrf_caller.address
             )
 
-            result = token.fulfillRandUintRequest_(
+            result = token.fulfillRandUintArrayRequest(
                 request.events[0].requestId, rand_num
             )
 
@@ -123,17 +134,96 @@ class TestOracle(TestCase):
 
         with get_token() as token:
             vrf_caller = VRFCaller.deploy(token.address)
-            request = token.generateRandUint(
+            token.updateAllowedAddress(vrf_caller.address, True)
+
+            request = token.generateSingleRandUint(
                 rand_min, rand_max, from_=vrf_caller.address
             )
 
-            result = token.fulfillRandUintRequest(request.events[0].requestId, rand_num)
+            result = token.fulfillSingleRandUintRequest(
+                request.events[0].requestId, rand_num
+            )
 
             with wt.must_revert():
-                token.generateRandUint(rand_min, rand_max, from_=vrf_caller.address)
+                token.generateSingleRandUint(
+                    rand_min, rand_max, from_=vrf_caller.address
+                )
+
+            self.assertEqual(
+                result.events[0].callbackCost,
+                token.getlastExecutionCost(
+                    vrf_caller.address, token.RequestTypes.RANDUINT_SINGLE
+                ),
+            )
+
+            self.assertGreaterEqual(result.events[0].callbackCost, result.gas_used)
 
     def test_pay_for_last_execution(self):
-        pass
+        rand_min, rand_max = self.get_min_max_randint()
+        rand_num = randint(rand_min, rand_max)
 
-    def test_fullfill_authorization(self):
-        pass
+        extra_gwei = randint(0, 1000) * GWEI
+
+        with get_token() as token:
+            vrf_caller = VRFCaller.deploy(token.address)
+            token.updateAllowedAddress(vrf_caller.address, True)
+
+            request = token.generateSingleRandUint(
+                rand_min, rand_max, from_=vrf_caller.address
+            )
+
+            result = token.fulfillSingleRandUintRequest(
+                request.events[0].requestId, rand_num
+            )
+
+            spent = result.events[0].callbackCost
+            vrf_caller.balance = spent * GWEI + extra_gwei
+
+            request = token.generateSingleRandUint(
+                rand_min, rand_max, from_=vrf_caller.address, value=spent * GWEI
+            )
+
+            with wt.must_revert():
+                token.generateSingleRandUint(
+                    rand_min, rand_max, from_=vrf_caller.address
+                )
+
+            self.assertEqual(vrf_caller.balance, extra_gwei)
+
+    def test_fulfill_request_payment_and_auth(self):
+        rand_min, rand_max = self.get_min_max_randint()
+        rand_num = randint(rand_min, rand_max)
+        rand_nums = [randint(rand_min, rand_max) for i in range(10)]
+
+        extra_gwei = randint(0, 1000) * GWEI
+
+        with get_token() as token:
+            vrf_caller = VRFCaller.deploy(token.address)
+            token.updateAllowedAddress(vrf_caller.address, True)
+
+            request = token.generateSingleRandUint(
+                rand_min, rand_max, from_=vrf_caller.address
+            )
+
+            token.fulfillSingleRandUintRequest(request.events[0].requestId, rand_num)
+
+            request2 = token.generateRandUintArray(
+                rand_min, rand_max, len(rand_nums), from_=vrf_caller.address
+            )
+
+            token.fulfillRandUintArrayRequest(request2.events[0].requestId, rand_nums)
+
+            with wt.must_revert():
+                token.generateSingleRandUint(
+                    rand_min, rand_max, from_=vrf_caller.address
+                )
+
+            with wt.must_revert():
+                token.generateRandUintArray(
+                    rand_min, rand_max, 10, from_=vrf_caller.address
+                )
+
+            with wt.must_revert():
+                token.generateSingleRandUint(rand_min, rand_max, from_=wt.Address(1))
+
+            token.generateSingleRandUint(rand_min, rand_max)

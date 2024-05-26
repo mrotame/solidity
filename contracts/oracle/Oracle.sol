@@ -7,12 +7,16 @@ import {IRequester} from "./IRequester.sol";
 import {OracleModifiers} from "./OracleModifiers.sol";
 
 contract Oracle is OracleModifiers{
-    constructor() {
+    constructor(address[] memory _allowedAddresses) {
         contractOwner = msg.sender;
+
+        for (uint i = 0; i < _allowedAddresses.length; i++) {
+            allowedAddresses[_allowedAddresses[i]] = true;
+        }
     }
 
-    function getlastExecutionCost() public view returns(uint) {
-        return lastExecutionCost;
+    function getlastExecutionCost(address _from, RequestTypes _request_type) public view returns(uint) {
+        return lastCostsPerRequester[_from][_request_type];
     }
 
     function getRequest(uint requestId) public view returns(RequestData memory) {
@@ -44,30 +48,36 @@ contract Oracle is OracleModifiers{
     // --------- RandUint Request ---------
 
     // Generate
-    function generateSingleRandUint(uint minNum, uint maxNum) public payable requireslastExecutionCost {
+    function generateSingleRandUint(uint minNum, uint maxNum) public payable requireslastExecutionCost(msg.sender, RequestTypes.RANDUINT_SINGLE) nonReentrant isOwnerOrAllowed(msg.sender){
         RequestData memory request = createRequest(RequestTypes.RANDUINT_SINGLE);
 
         emit RandUintParams(request.requestId, maxNum, minNum);
     }
 
-    function generateRandUintArray(uint minNum, uint maxNum, uint quantityRequired) public payable requireslastExecutionCost {
+    function generateRandUintArray(uint minNum, uint maxNum, uint quantityRequired) public payable requireslastExecutionCost(msg.sender, RequestTypes.RANDUINT_ARRAY) nonReentrant isOwnerOrAllowed(msg.sender){
         RequestData memory request = createRequest(RequestTypes.RANDUINT_ARRAY);
 
         emit RandUintParams(request.requestId, maxNum, minNum,quantityRequired);
     }
 
     // Fulfill
-    function fulfillSingleRandUintRequest(uint requestId, uint num) public isOwner(msg.sender) fulfillRequest(requestId){
-        IRequester(requests[requestId].requester).fulfillRequestRandUint(requestId, num);
+    function fulfillSingleRandUintRequest(uint requestId, uint num) public isOwner(msg.sender) fulfillRequest(requestId) nonReentrant{
+        IRequester(requests[requestId].requester).fulfillRequestSingleRandUint(requestId, num);
     }
 
-    function fulfillRandUinArraytRequest(uint requestId, uint[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId) {
-        IRequester(requests[requestId].requester).fulfillRequestRandUint(requestId, nums);
+    function fulfillRandUintArrayRequest(uint requestId, uint[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId) nonReentrant{
+        IRequester(requests[requestId].requester).fulfillRequestRandUintArray(requestId, nums);
     }
-    // -------------------------------------------
-   
-   function deposit() public payable {
-        deposit_number += 1;
-        emit Deposited()
-   }
+
+    // -----------------------------------
+
+
+    function isAllowedAddress(address _from) virtual public view returns(bool) {
+        return allowedAddresses[_from];
+    }
+
+    function updateAllowedAddress(address allowedAddr, bool isActive) isOwner(msg.sender) virtual public {
+        allowedAddresses[allowedAddr] = isActive;
+    }
+    
 }

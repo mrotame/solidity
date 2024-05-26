@@ -5,9 +5,12 @@ pragma solidity ^0.8.24;
 
 contract OracleAttributes {
     enum RequestTypes { RANDUINT_SINGLE, RANDUINT_ARRAY }
-    
-    uint withdraw_number;
-    uint deposit_number;
+
+    mapping(address  => bool) allowedAddresses;
+
+    address callerAccount;
+    uint transferNumber;
+    uint refoundNumber;
 
 
     struct RequestData {
