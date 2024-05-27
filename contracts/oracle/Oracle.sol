@@ -48,13 +48,13 @@ contract Oracle is OracleModifiers{
     // --------- RandUint Request ---------
 
     // Generate
-    function generateSingleRandUint(uint minNum, uint maxNum) public payable requireslastExecutionCost(msg.sender, RequestTypes.RANDUINT_SINGLE) nonReentrant isOwnerOrAllowed(msg.sender){
+    function generateSingleRandUint(uint minNum, uint maxNum) public payable requireslastExecutionCost(msg.sender, RequestTypes.RANDUINT_SINGLE) isOwnerOrAllowed(msg.sender){
         RequestData memory request = createRequest(RequestTypes.RANDUINT_SINGLE);
 
         emit RandUintParams(request.requestId, maxNum, minNum);
     }
 
-    function generateRandUintArray(uint minNum, uint maxNum, uint quantityRequired) public payable requireslastExecutionCost(msg.sender, RequestTypes.RANDUINT_ARRAY) nonReentrant isOwnerOrAllowed(msg.sender){
+    function generateRandUintArray(uint minNum, uint maxNum, uint quantityRequired) public payable requireslastExecutionCost(msg.sender, RequestTypes.RANDUINT_ARRAY) isOwnerOrAllowed(msg.sender){
         RequestData memory request = createRequest(RequestTypes.RANDUINT_ARRAY);
 
         emit RandUintParams(request.requestId, maxNum, minNum,quantityRequired);

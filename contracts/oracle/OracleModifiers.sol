@@ -24,10 +24,11 @@ contract OracleModifiers is SecuredContract, OracleEvents {
 
         _;
 
-        if (valueRequired > 0)
-        OracleUtils.transferEther(callerAccount, valueRequired);
-        transferNumber += 1;
-        emit Transfered(transferNumber, msg.sender, valueRequired);
+        if (valueRequired > 0) {
+            OracleUtils.transferEther(callerAccount, valueRequired);
+            transferNumber += 1;
+            emit Transfered(transferNumber, msg.sender, valueRequired);
+        }
     }
 
     modifier fulfillRequest(uint requestId) {

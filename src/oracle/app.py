@@ -10,6 +10,8 @@ from web3.exceptions import ExtraDataLengthError
 
 from pytypes.contracts.game.ArcaneWood import ArcaneWood
 
+from pytypes.contracts.oracle.Oracle import Oracle
+
 
 def get_abi(token) -> t.List[t.Dict[str, t.Any]]:
     abi = []
@@ -22,6 +24,7 @@ def get_abi(token) -> t.List[t.Dict[str, t.Any]]:
 class App:
     w3: Web3
     node_url = os.getenv("node_url")
+    oracle = Oracle(os.getenv("oracle_address"))
 
     def __init__(self):
         self.w3 = Web3(Web3.HTTPProvider(self.node_url))
@@ -36,8 +39,6 @@ class App:
             self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     def start(self):
-        WETH_ADDRESS = "0x6Da117feAb05963843F9E10972EFAB1d75bC17Dc"
-
         contract = self.w3.eth.contract(
             address=WETH_ADDRESS, abi=list(ArcaneWood._abi.values())
         )

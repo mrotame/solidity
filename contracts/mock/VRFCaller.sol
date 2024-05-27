@@ -22,9 +22,17 @@ contract VRFCaller is SecuredContract {
         setOracleContract(_oracleContract);
     }
 
+    receive() external payable{
+        
+    }
+
     function setOracleContract(address oracle_addr) public isOwner(msg.sender){
         oracleContract = oracle_addr;
         oracle = Oracle(oracleContract);
+    }
+
+    function generateSingleRandUint(uint min, uint max) public isOwner(msg.sender){
+        oracle.generateSingleRandUint(min, max);
     }
 
     function fulfillRequestSingleRandUint(uint _requestId, uint num) public isOracle(msg.sender) {

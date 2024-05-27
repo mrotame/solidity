@@ -10,6 +10,7 @@ python = "^3.12"
 eth-wake = "^4.9.0"
 python-dotenv = "^1.0.1"
 web3 = "^6.19.0"
+toml = "^0.10.2"
 
 
 [tool.poetry.group.dev.dependencies]
