@@ -25,24 +25,11 @@ contract Oracle is OracleModifiers{
         return requests[requestId];
     }
 
-    function createRequest(RequestTypes requestType) internal returns (RequestData memory) {
-        currentRequestId += 1;
+    function createRequest(RequestTypes requestType) internal returns (uint){
+        currentRequestId += 1; 
+        emit RequestCreated(currentRequestId, msg.sender, requestType);
 
-        RequestData memory requestData = RequestData(
-            currentRequestId,
-            requestType,
-            msg.sender,
-            block.timestamp,
-            0,
-            0,
-            false
-        );
-        
-        requests[currentRequestId] = requestData;
-        
-        emit RequestCreated(requestData.requestId, requestData.requester, requestType, requestData.requestTimestamp);
-
-        return requestData;
+        return uint();
     }
 
     // --------- RandUint Request ---------

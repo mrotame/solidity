@@ -12,20 +12,9 @@ contract OracleAttributes {
     uint transferNumber;
     uint refoundNumber;
 
-
-    struct RequestData {
-        uint requestId;
-        RequestTypes requestType;
-        address requester;
-        uint requestTimestamp;
-        uint callbackCost;
-        uint callbackTimestamp;
-        bool fulfiled;
-    }
-
     uint256 currentRequestId;
 
-    mapping (uint requestId => RequestData) requests;
+    mapping (uint requestId => bool) requests;
 
     mapping (RequestTypes => bytes4) fulfillFunctions;
 

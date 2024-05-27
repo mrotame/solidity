@@ -9,13 +9,11 @@ contract OracleEvents is OracleAttributes{
         uint indexed requestId,
         address requester,
         RequestTypes RequestTypes,
-        uint requestTimestamp
     );
 
     event RequestFulfilled(
         uint indexed requestId,
         uint callbackCost,
-        uint callbackTimestamp
     );
 
     event RandUintParams(
