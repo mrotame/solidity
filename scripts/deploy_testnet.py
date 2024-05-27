@@ -23,11 +23,20 @@ VRFCALLER_CONTRACT = "0x8a5eefbced8b59b61f622f2871f1c9afcf16fd26"
 
 @wd.default_chain.connect(NODE_URL)
 def main():
-    wd.default_chain.set_default_accounts(
-        wd.Account.from_mnemonic(os.getenv("secret_phrase_wallet"))
-    )
-    token: Oracle = Oracle("0xb5498b31ca4c1b0cc781214a018f14a19fbeea9d")
-    token.generateSingleRandUint(10, 100)
+    account = wd.Account.from_mnemonic(os.getenv("secret_phrase_wallet"))
+    wd.default_chain.set_default_accounts(account)
+
+    oracle: Oracle = Oracle.deploy([])
+    caller = VRFCaller.deploy(oracle.address)
+
+    oracle.updateAllowedAddress(caller.address, True)
+
+    request = caller.generateSingleRandUint(10, 100)
+
+    result = oracle.fulfillSingleRandUintRequest(1, 55)
+
+    print("oracle:", oracle.address)
+    print("caller:", caller.address)
     pass
 
 

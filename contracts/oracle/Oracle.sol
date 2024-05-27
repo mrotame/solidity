@@ -15,45 +15,39 @@ contract Oracle is OracleModifiers{
         }
     }
 
-    function getlastExecutionCost(address _from, RequestTypes _request_type) public view returns(uint) {
-        return lastCostsPerRequester[_from][_request_type];
-    }
-
-    function getRequest(uint requestId) public view returns(RequestData memory) {
-        require(requests[requestId].requestId != 0);
-        
-        return requests[requestId];
-    }
-
     function createRequest(RequestTypes requestType) internal returns (uint){
         currentRequestId += 1; 
+        requests[currentRequestId] = msg.sender;
         emit RequestCreated(currentRequestId, msg.sender, requestType);
-
-        return uint();
+        return currentRequestId;
     }
 
     // --------- RandUint Request ---------
 
     // Generate
-    function generateSingleRandUint(uint minNum, uint maxNum) public payable requireslastExecutionCost(msg.sender, RequestTypes.RANDUINT_SINGLE) isOwnerOrAllowed(msg.sender){
-        RequestData memory request = createRequest(RequestTypes.RANDUINT_SINGLE);
+    function generateSingleRandUint(uint minNum, uint maxNum) public payable isOwnerOrAllowed(msg.sender) returns (uint){
+        uint request = createRequest(RequestTypes.RANDUINT_SINGLE);
 
-        emit RandUintParams(request.requestId, maxNum, minNum);
+        emit RandUintParams(request, maxNum, minNum);
+
+        return request;
     }
 
-    function generateRandUintArray(uint minNum, uint maxNum, uint quantityRequired) public payable requireslastExecutionCost(msg.sender, RequestTypes.RANDUINT_ARRAY) isOwnerOrAllowed(msg.sender){
-        RequestData memory request = createRequest(RequestTypes.RANDUINT_ARRAY);
+    function generateRandUintArray(uint minNum, uint maxNum, uint quantityRequired) public payable isOwnerOrAllowed(msg.sender) returns (uint){
+        uint request = createRequest(RequestTypes.RANDUINT_ARRAY);
 
-        emit RandUintParams(request.requestId, maxNum, minNum,quantityRequired);
+        emit RandUintParams(request, maxNum, minNum,quantityRequired);
+
+        return request;
     }
 
     // Fulfill
-    function fulfillSingleRandUintRequest(uint requestId, uint num) public isOwner(msg.sender) fulfillRequest(requestId) nonReentrant{
-        IRequester(requests[requestId].requester).fulfillRequestSingleRandUint(requestId, num);
+    function fulfillSingleRandUintRequest(uint requestId, uint num) public isOwner(msg.sender) fulfillRequest(requestId) {
+        IRequester(requests[requestId]).fulfillRequestSingleRandUint(requestId, num);
     }
 
-    function fulfillRandUintArrayRequest(uint requestId, uint[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId) nonReentrant{
-        IRequester(requests[requestId].requester).fulfillRequestRandUintArray(requestId, nums);
+    function fulfillRandUintArrayRequest(uint requestId, uint[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId){
+        IRequester(requests[requestId]).fulfillRequestRandUintArray(requestId, nums);
     }
 
     // -----------------------------------
