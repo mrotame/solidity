@@ -50,6 +50,27 @@ class App:
             if tx["to"] == WETH_ADDRESS:
                 pass
 
+    def run_process(self):
+        events = self.slice_events(self.get_events())
+        last_block = self.get_last_block(events[-1])
+
+        self.process_events(events)
+
+    def get_events(self):
+        pass
+
+    def slice_events(self):
+        pass
+
+    def get_last_block(self):
+        pass
+
+    def process_events(self):
+        pass
+
+    def register_status(self):
+        pass
+
 
 if __name__ == "__main__":
     App().start()

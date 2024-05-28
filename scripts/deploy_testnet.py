@@ -40,5 +40,15 @@ def main():
     pass
 
 
+def make_deploy():
+    account = wd.Account.from_mnemonic(os.getenv("secret_phrase_wallet"))
+    wd.default_chain.set_default_accounts(account)
+
+    oracle: Oracle = Oracle.deploy([])
+    caller = VRFCaller.deploy(oracle.address)
+
+    oracle.updateAllowedAddress(caller.address, True)
+
+
 if __name__ == "__main__":
     main()
