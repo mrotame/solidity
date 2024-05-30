@@ -12,10 +12,10 @@ contract VRFCaller is SecuredContract {
     Oracle oracle;
 
     string public functionCalled;
-    uint public requestId;
+    uint128 public requestId;
     address public msgSender;
-    uint public randomUint;
-    uint[] public randomUints;
+    uint24 public randomUint;
+    uint24[] public randomUints;
 
 
     constructor(address _oracleContract) SecuredContract(){
@@ -31,18 +31,22 @@ contract VRFCaller is SecuredContract {
         oracle = Oracle(oracleContract);
     }
 
-    function generateSingleRandUint(uint min, uint max) public isOwner(msg.sender){
-        oracle.generateSingleRandUint(min, max);
+    function generateSingleRandUint(uint24 min, uint24 max) public payable {
+        oracle.generateSingleRandUint{value: msg.value}(min, max);
     }
 
-    function fulfillRequestSingleRandUint(uint _requestId, uint num) public isOracle(msg.sender) {
+    function generateRandUintArray(uint24 min, uint24 max, uint8 quantity) public payable {
+        oracle.generateRandUintArray{value: msg.value}(min, max, quantity);
+    }
+
+    function fulfillRequestSingleRandUint(uint128 _requestId, uint24 num) public isOracle(msg.sender) {
         functionCalled = "fulfillRequestRandUint_singleUint";
         requestId = _requestId;
         msgSender = msg.sender;
         randomUint = num;
     }
     
-    function fulfillRequestRandUintArray(uint _requestId, uint[] memory nums) public isOracle(msg.sender) {
+    function fulfillRequestRandUintArray(uint128 _requestId, uint24[] memory nums) public isOracle(msg.sender) {
         functionCalled = "fulfillRequestRandUint_uintArray";
         requestId = _requestId;
         msgSender = msg.sender;

@@ -19,11 +19,11 @@ contract ERC721 is SecuredContract{
     uint256 internal max_supply;
     uint256 internal current_supply;
 
-    mapping (uint token_id => address approved) internal token_approvals;
+    mapping (uint256 token_id => address approved) internal token_approvals;
     mapping (address holder => mapping(address approved => bool status)) internal holder_approvals;
 
-    mapping (uint token_id => address holder) internal tokens;
-    mapping (address holder => uint total_tokens_holding) internal balances;
+    mapping (uint256 token_id => address holder) internal tokens;
+    mapping (address holder => uint256 total_tokens_holding) internal balances;
 
 
     event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
@@ -41,7 +41,7 @@ contract ERC721 is SecuredContract{
         _;
     }
 
-    modifier isOwner_self_admin_or_approved(address requester_addr, address from_address, uint token_id) virtual  {
+    modifier isOwner_self_admin_or_approved(address requester_addr, address from_address, uint256 token_id) virtual  {
         require(
             requester_addr == contractOwner ||
             requester_addr == from_address ||
@@ -59,7 +59,7 @@ contract ERC721 is SecuredContract{
         token_symbol = _token_symbol;
         max_supply = _max_supply;
 
-        for (uint i=0; i < _admins.length; i++) {
+        for (uint8 i=0; i < _admins.length; i++) {
             admin_addrs[_admins[i]] = true;
         }
     }

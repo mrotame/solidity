@@ -27,7 +27,7 @@ contract ERC20 is SecuredContract {
         token_decimals = _token_decimals;
         max_supply = _max_supply;
 
-        for (uint i = 0; i < _admins.length; i++) {
+        for (uint8 i = 0; i < _admins.length; i++) {
             admin_addrs[_admins[i]] = true;
         }
     }
@@ -96,7 +96,7 @@ contract ERC20 is SecuredContract {
     function mint(address _to, uint _amount) isOwnerOrAdmin(msg.sender) virtual public {
         require(_to != address(0), "mint error: invalid _to address");
         if (max_supply >0) {
-            require(current_supply + _amount <= max_supply);
+            require(current_supply + _amount <= max_supply, "mint error: Above max supply");
         }
         _mint(_to, _amount);
     }

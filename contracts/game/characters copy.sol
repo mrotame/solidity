@@ -27,7 +27,8 @@ contract TestNFT is ERC721{
             '{',
                 '"name":"Test Token NFT",',
                 '"description":"Test description",',
-                '"image":"http://pm1.narvii.com/6908/59db53adee65fc677e2e221b461e2c7484c1902dr1-365-358v2_00.jpg"'
+                '"image":"http://pm1.narvii.com/6908/59db53adee65fc677e2e221b461e2c7484c1902dr1-365-358v2_00.jpg",',
+                '"test_metadata":{"test_key": ["test_value1", "test_value2"]}'
             '}'
         );
 

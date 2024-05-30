@@ -6,32 +6,27 @@ import {OracleAttributes} from "./OracleAttributes.sol";
 
 contract OracleEvents is OracleAttributes{
     event RequestCreated(
-        uint indexed requestId,
+        uint128 indexed requestId,
         address requester,
-        RequestTypes RequestTypes
+        RequestTypes requestType,
+        uint256 chargedGas
     );
 
     event RequestFulfilled(
-        uint indexed requestId
+        uint128 indexed requestId
     );
 
-    event RandUintParams(
-        uint indexed requestId,
-        uint max_num,
-        uint min_num
+    event SingleRandUintParams(
+        uint128 indexed requestId,
+        uint24 max_num,
+        uint24 min_num
     );
 
-    event RandUintParams(
-        uint indexed requestId,
-        uint max_num,
-        uint min_num,
-        uint quantityRequired
-    );
-
-    event Transfered(
-        uint indexed transferNumber,
-        address indexed receiver,
-        uint amount // WEI
+    event RandUintArrayParams(
+        uint128 indexed requestId,
+        uint24 max_num,
+        uint24 min_num,
+        uint8 quantityRequired
     );
 
 }

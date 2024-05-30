@@ -3,6 +3,6 @@
 pragma solidity 0.8.24;
 
 interface IRequester {
-    function fulfillRequestSingleRandUint(uint requestId, uint num) external;
-    function fulfillRequestRandUintArray(uint requestId, uint[] memory nums) external;
+    function fulfillRequestSingleRandUint(uint128 requestId, uint24 num) external;
+    function fulfillRequestRandUintArray(uint128 requestId, uint24[] memory nums) external;
 }

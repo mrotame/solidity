@@ -9,44 +9,45 @@ import {OracleModifiers} from "./OracleModifiers.sol";
 contract Oracle is OracleModifiers{
     constructor(address[] memory _allowedAddresses) {
         contractOwner = msg.sender;
+        callerAccount = msg.sender;
 
         for (uint i = 0; i < _allowedAddresses.length; i++) {
             allowedAddresses[_allowedAddresses[i]] = true;
         }
     }
 
-    function createRequest(RequestTypes requestType) internal returns (uint){
+    function createRequest(RequestTypes requestType) internal returns (uint128){
         currentRequestId += 1; 
         requests[currentRequestId] = msg.sender;
-        emit RequestCreated(currentRequestId, msg.sender, requestType);
+        emit RequestCreated(currentRequestId, msg.sender, requestType, baseGasWeiFee);
         return currentRequestId;
     }
 
     // --------- RandUint Request ---------
 
     // Generate
-    function generateSingleRandUint(uint minNum, uint maxNum) public payable isOwnerOrAllowed(msg.sender) returns (uint){
-        uint request = createRequest(RequestTypes.RANDUINT_SINGLE);
+    function generateSingleRandUint(uint24 minNum, uint24 maxNum) public payable isOwnerOrAllowed(msg.sender) requireFee returns (uint){
+        uint128 request = createRequest(RequestTypes.RANDUINT_SINGLE);
 
-        emit RandUintParams(request, maxNum, minNum);
+        emit SingleRandUintParams(request, maxNum, minNum);
 
         return request;
     }
 
-    function generateRandUintArray(uint minNum, uint maxNum, uint quantityRequired) public payable isOwnerOrAllowed(msg.sender) returns (uint){
-        uint request = createRequest(RequestTypes.RANDUINT_ARRAY);
+    function generateRandUintArray(uint24 minNum, uint24 maxNum, uint8 quantityRequired) public payable isOwnerOrAllowed(msg.sender) requireFee returns (uint){
+        uint128 request = createRequest(RequestTypes.RANDUINT_ARRAY);
 
-        emit RandUintParams(request, maxNum, minNum,quantityRequired);
+        emit RandUintArrayParams(request, maxNum, minNum,quantityRequired);
 
         return request;
     }
 
     // Fulfill
-    function fulfillSingleRandUintRequest(uint requestId, uint num) public isOwner(msg.sender) fulfillRequest(requestId) {
+    function fulfillSingleRandUintRequest(uint128 requestId, uint24 num) public isOwner(msg.sender) fulfillRequest(requestId) {
         IRequester(requests[requestId]).fulfillRequestSingleRandUint(requestId, num);
     }
 
-    function fulfillRandUintArrayRequest(uint requestId, uint[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId){
+    function fulfillRandUintArrayRequest(uint128 requestId, uint24[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId){
         IRequester(requests[requestId]).fulfillRequestRandUintArray(requestId, nums);
     }
 
@@ -59,6 +60,23 @@ contract Oracle is OracleModifiers{
 
     function updateAllowedAddress(address allowedAddr, bool isActive) isOwner(msg.sender) virtual public {
         allowedAddresses[allowedAddr] = isActive;
+    }
+
+    function setCallerAddress(address newCaller) public isOwner(msg.sender){
+        callerAccount = newCaller;
+    }
+
+    function getbaseGasGweiFee() public view returns(uint256) {
+        return baseGasWeiFee;
+    }
+
+    function setbaseGasGweiFee(uint256 Gwei) public {
+        baseGasWeiFee = (Gwei * 1 gwei);
+    }
+
+    function transferGas() public isOwner(msg.sender) {
+        (bool status, ) = callerAccount.call{value: address(this).balance}("");
+        require(status, "Failed to transfer gas for callback");
     }
     
 }

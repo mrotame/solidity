@@ -11,6 +11,11 @@ eth-wake = "^4.9.0"
 python-dotenv = "^1.0.1"
 web3 = "^6.19.0"
 toml = "^0.10.2"
+firebase-admin = "^6.5.0"
+requests = "^2.32.2"
+loguru = "^0.7.2"
+rdoclient = "^1.5.0"
+six = "^1.16.0"
 
 
 [tool.poetry.group.dev.dependencies]
