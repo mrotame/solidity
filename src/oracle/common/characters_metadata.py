@@ -12,7 +12,9 @@ class CharacterMetadata:
     }
 
     @classmethod
-    def build_character_metadata(cls, attributes: t.List[int]) -> t.Dict[str, t.Any]:
+    def build_character_metadata(
+        cls, attributes: t.Annotated[t.List[int], 10]
+    ) -> t.Dict[str, t.Any]:
         character_class = cls.get_character_class(attributes)
 
         metadata = {

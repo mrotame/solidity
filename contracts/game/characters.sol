@@ -5,49 +5,57 @@ pragma solidity ^0.8.24;
 import {ERC721} from "../common/tokens/ERC721.sol";
 import {ERC721Utils} from "../common/utils/ERC721Utils.sol";
 
+import {Oracle} from "../oracle/Oracle.sol";
+
 contract ArcaneCharacters is ERC721{
-    uint requestId;
-    enum characterTypes {MINER, LUMBERJACK, FISHERMAN, WARRIOR}
-    
+    Oracle oracle;
+
+    mapping (uint tokenId => Character nft) nftMetadata;
+ 
     struct Character {
-        characterTypes characterType;
-        string randomSeed;
-        uint intelligence;
-        uint strength;
-        uint stamina;
-        uint moral;
+        string metadata_url;
+        uint8 mining_power;
+        uint8 mining_speed;
+        uint8 chopping_power;
+        uint8 chopping_speed;
+        uint8 fishing_power;
+        uint8 fishing_speed;
+        uint8 fighting_power;
+        uint8 fighting_speed;
+        uint8 selling_power;
+        uint8 selling_speed;
     }
 
-    event MintRequest(
-        uint indexed requestId,
-        address requester,
-        uint requestTimestamp
-    );
-    
-    constructor(address[] memory _admins) ERC721("Arcane Characters", "ARCH", 0, _admins) {
-        _mint(address(0xd9cb9167159adA5aCACd0fdb3E73A067008168fA));
+    constructor(address _oracleContract, address[] memory _admins) ERC721("Arcane Characters", "ARCH", 0, _admins) {
+        oracle = Oracle(_oracleContract);
     }
 
     function tokenURI(uint256 _tokenId) public view override returns (string memory) {
-        bytes memory _dataURI = abi.encodePacked(
-            "data:application/json;utf8,",
-            '{',
-                '"name":"Test Token NFT",',
-                '"description":"Test description",',
-                '"image":"" '
-            '}'
-        );
-
-        return string(_dataURI);
+        return string(nftMetadata[_tokenId].metadata_url);
     }
 
     function requestMint() public{
-        requestId ++;
-        emit MintRequest(requestId, msg.sender, block.timestamp);
+        currentTokenId ++;
+        tokens[currentTokenId] = msg.sender;
+
+        oracle.generateCharacter(currentTokenId);
     }
 
-    function mintNft(uint requestId, address _to) public isOwner(msg.sender) {
-        _mint(_to);
+    function fulfillCharacterMintRequest(uint256 characterId, uint8[10] memory attributes, string memory ipfsId) public isOracle(msg.sender){
+        nftMetadata[characterId] = Character(
+            ipfsId,
+             attributes[0],
+             attributes[1],
+             attributes[2], 
+             attributes[3],
+             attributes[4],
+             attributes[5],
+             attributes[6],
+             attributes[7],
+             attributes[8],
+             attributes[9]
+        );
     }
+    
 
 }

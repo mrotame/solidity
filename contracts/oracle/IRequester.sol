@@ -7,5 +7,5 @@ interface IRequester {
 
     function fulfillRequestRandUintArray(uint256 requestId, uint24[] memory nums) external;
 
-    function fulfillRequestMint(uint8[10] memory attributes, string memory ipfsId) external;
+    function fulfillCharacterMintRequest(uint256 characterId, uint8[10] memory attributes, string memory ipfsId) external;
 }

@@ -13,7 +13,7 @@ import {ERC721Utils} from "../utils/ERC721Utils.sol";
 import {SecuredContract} from "../securedContract/SecuredContract.sol";
 
 contract ERC721 is SecuredContract{
-    uint256 internal current_tokenId;
+    uint256 internal currentTokenId;
     string internal token_name;
     string internal token_symbol;
     uint256 internal max_supply;
@@ -151,16 +151,16 @@ contract ERC721 is SecuredContract{
     }
 
     function _mint(address _to) internal virtual returns (uint256 token_id) {
-        require(max_supply == 0 || current_tokenId < max_supply, "Mint error: Above max supply limit");
+        require(max_supply == 0 || currentTokenId < max_supply, "Mint error: Above max supply limit");
 
-        current_tokenId += 1;
+        currentTokenId += 1;
 
-        tokens[current_tokenId] = _to;
+        tokens[currentTokenId] = _to;
         balances[_to] += 1;
         
         current_supply += 1;
 
-        emit Transfer(address(0), _to, current_tokenId);
+        emit Transfer(address(0), _to, currentTokenId);
 
         return current_supply;
     }

@@ -59,8 +59,8 @@ contract Oracle is OracleModifiers{
         emit MintCharacterParams(request, characterId);
     }
 
-    function fulfillMintRequest(uint256 requestId, uint8[10] calldata attributes, string memory ipfsId ) public isOwner(msg.sender) fulfillRequest(requestId){
-        IRequester(requests[requestId]).fulfillRequestMint(attributes, ipfsId);
+    function fulfillCharacterMintRequest(uint256 requestId, uint256 characterId, uint8[10] calldata attributes, string memory ipfsId ) public isOwner(msg.sender) fulfillRequest(requestId){
+        IRequester(requests[requestId]).fulfillCharacterMintRequest(characterId, attributes, ipfsId);
     }
 
     // -----------------------------------

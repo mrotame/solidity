@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from src.oracle.models.oracle_requests import OracleRequest
 from src.oracle.common.random_org_api import RandomOrg
+from src.oracle.common.characters_metadata import CharacterMetadata
+from src.oracle.common.pinata_api import PinataApi
 
 
 @dataclass
@@ -37,4 +39,13 @@ class ProcessRandom:
         signed_random.request_id = request.id
         signed_random.save()
 
-        ipfs_json = {}
+        ipfs_json = {
+            **CharacterMetadata.build_character_metadata(nums),
+            "randomness": {
+                "data": signed_random.data,
+                "random": signed_random.random,
+                "signature": signed_random.signature,
+            },
+        }
+
+        PinataApi().pin_json()
