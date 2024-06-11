@@ -3,7 +3,7 @@ import typing as t
 from web3 import Web3
 from web3.contract.contract import Contract, ContractEvent
 
-from src.oracle.models.oracle_requests import Request
+from src.oracle.models.oracle_requests import OracleRequest
 from src.oracle.common.request_parameters import RequestType
 
 
@@ -14,7 +14,7 @@ class Monitoring:
         self.w3 = w3_client
         self.oracle = oracle
 
-    def __call__(self, from_block: int, max_amount: int = 100) -> t.List[Request]:
+    def __call__(self, from_block: int, max_amount: int = 100) -> t.List[OracleRequest]:
         event_params = {
             event: self.grab_parameters(event)
             for event in self.grab_events(from_block, max_amount)
@@ -58,10 +58,10 @@ class Monitoring:
 
     def setup_request_object(
         self, event_param_dict: t.Dict[ContractEvent, t.Dict[str, t.Any]]
-    ) -> t.List[Request]:
+    ) -> t.List[OracleRequest]:
         requests = []
         for event in event_param_dict:
-            request = Request(
+            request = OracleRequest(
                 requester=event["args"]["requester"],
                 request_type=event["args"]["requestType"],
                 request_timestamp=self.w3.eth.get_block(event["blockNumber"]).timestamp,
@@ -72,3 +72,5 @@ class Monitoring:
             )
             request.save()
             requests.append(request)
+
+        return requests

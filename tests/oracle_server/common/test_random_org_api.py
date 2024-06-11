@@ -13,6 +13,7 @@ class TestRandomOrgApi(TestCase):
         max = randint(100, 200)
 
         num, signed_item = self.rand.get_random_int(min, max)
+        signed_item.save()
 
         self.assertGreaterEqual(num, min)
         self.assertLessEqual(num, max)
@@ -27,6 +28,7 @@ class TestRandomOrgApi(TestCase):
         quantity = randint(2, 5)
 
         nums, signed_item = self.rand.get_random_int_array(quantity, min, max)
+        signed_item.save()
 
         for i in nums:
             self.assertGreaterEqual(i, min)

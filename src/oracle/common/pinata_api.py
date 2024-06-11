@@ -53,13 +53,11 @@ class PinataApi:
         res = requests.post(
             url=f"{self.base_url}/pinning/pinJSONToIPFS",
             headers=self.get_headers(),
-            data=json.dumps(
-                {
-                    "pinataContent": json.dumps(json_data),
-                    "pinataMetadata": pinata_metadata,
-                    "pinataOptions": options,
-                }
-            ),
+            json={
+                "pinataContent": json_data,
+                "pinataMetadata": pinata_metadata,
+                "pinataOptions": options,
+            },
         )
 
         assert res.status_code == 200

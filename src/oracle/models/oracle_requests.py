@@ -6,7 +6,7 @@ from src.oracle.common import request_parameters as rp
 
 
 @dataclass
-class Request(BaseModel):
+class OracleRequest(BaseModel):
     __tablename__ = "requests"
 
     requester: str
@@ -16,4 +16,6 @@ class Request(BaseModel):
     charged_callback_gas: int
     callback_timestamp: int
     request_parameters: t.Dict[str, t.Any]
-    completed: bool = field(init=False, default=False)
+    request_status: t.Literal["initialized", "processing", "completed", "failed"] = (
+        field(init=False, default="initialized")
+    )

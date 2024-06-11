@@ -1,5 +1,5 @@
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from src.oracle.database.base_model import BaseModel
 
@@ -11,3 +11,5 @@ class SignedRandom(BaseModel):
     data: t.List[t.Any]
     random: t.Dict[str, t.Any]
     signature: str
+
+    request_id: int = field(default=0)

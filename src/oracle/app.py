@@ -15,6 +15,10 @@ from pytypes.contracts.oracle.Oracle import Oracle
 
 from src.oracle.common.utils import get_abi
 from src.oracle.process.monitoring import Monitoring
+from src.oracle.models.oracle_requests import OracleRequest
+from src.oracle.common.request_parameters import RequestType
+from src.oracle.models.oracle_metadata import OracleMetadata
+from src.oracle.process.process_random import GenerateRandom
 
 
 def get_abi(token) -> t.List[t.Dict[str, t.Any]]:
@@ -62,17 +66,30 @@ class App:
             time.sleep(1)
 
     def run_process(self):
-        events = self.get_events()
+        block_to_monitor = self.get_block_to_monitor()
+        events = self.get_events(block_to_monitor)
         self.process_events(events)
 
-    def get_events(self):
-        events = self.monitoring(0)
+    def get_events(self, from_block: int) -> t.List[OracleRequest]:
+        events = self.monitoring(from_block)
+        return events
 
-    def process_events(self):
-        pass
+    def process_events(self, events: t.List[OracleRequest]):
+        for event in events:
+            data = self.get_random_data(event)
+
+    def get_random_data(self, event: OracleRequest):
+        request_type = RequestType(event.request_type).name
+        request_type = request_type.replace("Params", "")
+
+        rand_data = GenerateRandom.get_random_data(request_type, event)
 
     def register_status(self):
         pass
+
+    def get_block_to_monitor(self) -> int:
+        last = OracleMetadata.get_last()
+        return last.last_block_monitored
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ contract VRFCaller is SecuredContract {
     Oracle oracle;
 
     string public functionCalled;
-    uint128 public requestId;
+    uint256 public requestId;
     address public msgSender;
     uint24 public randomUint;
     uint24[] public randomUints;
@@ -39,14 +39,14 @@ contract VRFCaller is SecuredContract {
         oracle.generateRandUintArray{value: msg.value}(min, max, quantity);
     }
 
-    function fulfillRequestSingleRandUint(uint128 _requestId, uint24 num) public isOracle(msg.sender) {
+    function fulfillRequestSingleRandUint(uint256 _requestId, uint24 num) public isOracle(msg.sender) {
         functionCalled = "fulfillRequestRandUint_singleUint";
         requestId = _requestId;
         msgSender = msg.sender;
         randomUint = num;
     }
     
-    function fulfillRequestRandUintArray(uint128 _requestId, uint24[] memory nums) public isOracle(msg.sender) {
+    function fulfillRequestRandUintArray(uint256 _requestId, uint24[] memory nums) public isOracle(msg.sender) {
         functionCalled = "fulfillRequestRandUint_uintArray";
         requestId = _requestId;
         msgSender = msg.sender;

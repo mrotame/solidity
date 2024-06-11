@@ -6,3 +6,4 @@ from enum import Enum
 class RequestType(Enum):
     SingleRandUintParams = 0
     RandUintArrayParams = 1
+    MintCharacterParams = 2

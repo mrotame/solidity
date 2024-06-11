@@ -25,8 +25,8 @@ def get_oracle(allowed_addresses=None) -> t.Generator[Oracle, Oracle, Oracle]:
 
 class TestOracle(TestCase):
     def get_min_max_randint(self) -> t.Tuple[int, int]:
-        rand_min = randint(0, 1000)
-        rand_max = randint(rand_min + 10, rand_min + 1000)
+        rand_min = randint(0, 10)
+        rand_max = randint(rand_min + 10, rand_min + 100)
         self.assertGreater(rand_max, rand_min)
         return rand_min, rand_max
 

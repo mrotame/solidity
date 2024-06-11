@@ -16,7 +16,7 @@ contract Oracle is OracleModifiers{
         }
     }
 
-    function createRequest(RequestTypes requestType) internal returns (uint128){
+    function createRequest(RequestTypes requestType) internal returns (uint256){
         currentRequestId += 1; 
         requests[currentRequestId] = msg.sender;
         emit RequestCreated(currentRequestId, msg.sender, requestType, baseGasWeiFee);
@@ -27,7 +27,7 @@ contract Oracle is OracleModifiers{
 
     // Generate
     function generateSingleRandUint(uint24 minNum, uint24 maxNum) public payable isOwnerOrAllowed(msg.sender) requireFee returns (uint){
-        uint128 request = createRequest(RequestTypes.RANDUINT_SINGLE);
+        uint256 request = createRequest(RequestTypes.RANDUINT_SINGLE);
 
         emit SingleRandUintParams(request, maxNum, minNum);
 
@@ -35,7 +35,7 @@ contract Oracle is OracleModifiers{
     }
 
     function generateRandUintArray(uint24 minNum, uint24 maxNum, uint8 quantityRequired) public payable isOwnerOrAllowed(msg.sender) requireFee returns (uint){
-        uint128 request = createRequest(RequestTypes.RANDUINT_ARRAY);
+        uint256 request = createRequest(RequestTypes.RANDUINT_ARRAY);
 
         emit RandUintArrayParams(request, maxNum, minNum,quantityRequired);
 
@@ -43,12 +43,24 @@ contract Oracle is OracleModifiers{
     }
 
     // Fulfill
-    function fulfillSingleRandUintRequest(uint128 requestId, uint24 num) public isOwner(msg.sender) fulfillRequest(requestId) {
+    function fulfillSingleRandUintRequest(uint256 requestId, uint24 num) public isOwner(msg.sender) fulfillRequest(requestId) {
         IRequester(requests[requestId]).fulfillRequestSingleRandUint(requestId, num);
     }
 
-    function fulfillRandUintArrayRequest(uint128 requestId, uint24[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId){
+    function fulfillRandUintArrayRequest(uint256 requestId, uint24[] calldata nums) public isOwner(msg.sender) fulfillRequest(requestId){
         IRequester(requests[requestId]).fulfillRequestRandUintArray(requestId, nums);
+    }
+
+    //  --------- Minting Request ---------
+
+    function generateCharacter(uint256 characterId) public isOwnerOrAllowed(msg.sender) requireFee payable {
+        uint256 request = createRequest(RequestTypes.MINT_CHARACTER);
+
+        emit MintCharacterParams(request, characterId);
+    }
+
+    function fulfillMintRequest(uint256 requestId, uint8[10] calldata attributes, string memory ipfsId ) public isOwner(msg.sender) fulfillRequest(requestId){
+        IRequester(requests[requestId]).fulfillRequestMint(attributes, ipfsId);
     }
 
     // -----------------------------------

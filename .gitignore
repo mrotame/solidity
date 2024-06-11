@@ -202,3 +202,4 @@ firebase_credentials_*.json
 .wake
 wake-coverage.cov
 pytypes
+delete

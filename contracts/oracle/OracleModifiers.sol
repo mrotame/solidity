@@ -9,7 +9,7 @@ import {OracleAttributes} from "./OracleAttributes.sol";
 
 contract OracleModifiers is SecuredContract, OracleEvents {
     
-    modifier fulfillRequest(uint128 requestId) {
+    modifier fulfillRequest(uint256 requestId) {
         _;
         emit RequestFulfilled(requestId);
     }
