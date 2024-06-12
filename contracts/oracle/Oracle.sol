@@ -82,8 +82,8 @@ contract Oracle is OracleModifiers{
         return baseGasWeiFee;
     }
 
-    function setbaseGasGweiFee(uint256 Gwei) public {
-        baseGasWeiFee = (Gwei * 1 gwei);
+    function setbaseGasGweiFee(uint256 _newCost) public {
+        baseGasWeiFee = (_newCost * 1 gwei);
     }
 
     function transferGas() public isOwner(msg.sender) {

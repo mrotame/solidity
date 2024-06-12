@@ -16,7 +16,7 @@ contract ArcaneResource is ERC20{
 
     function update_tax_address(address _new_addr) public isOwner(_new_addr){
         tax_address = _new_addr;
-    }
+    } 
 
     function transferFrom(address _from, address _to, uint256 _value) override public returns (bool success) {
         uint tax_amount = (_value * tax_fee_percent) / 100;
