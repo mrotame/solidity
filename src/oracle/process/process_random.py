@@ -7,33 +7,32 @@ from src.oracle.common.characters_metadata import CharacterMetadata
 from src.oracle.common.pinata_api import PinataApi
 
 
-@dataclass
-class RandomData:
-    callback_response: t.Dict[str, t.Any]
-    ipfs_json: t.Dict[str, t.Any]
-    ipfs_metadata: t.Dict[str, t.Any] = None
-    ipfs_options: t.Dict[str, t.Any] = None
+class MintCharacterData(t.TypedDict):
+    requestId: str
+    characterId: str
+    attributes: t.Annotated[t.List[int], 10]
+    ipfsId: str
 
 
 class ProcessRandom:
     randomOrg = RandomOrg()
 
     @classmethod
-    def get_random_data(self, request_type: int, request: OracleRequest):
+    def get_random_data(self, request_type: str, request: OracleRequest):
         rand_func = getattr(self, f"process_{request_type}")
 
         return rand_func(request)
 
     @classmethod
-    def process_SingleRandUint(self, request: OracleRequest):
-        pass
+    def process_SingleRandUint(self, request: OracleRequest) -> t.Dict[str, t.Any]:
+        raise NotImplementedError
 
     @classmethod
-    def process_RandUintArray(self, request: OracleRequest):
-        pass
+    def process_RandUintArray(self, request: OracleRequest) -> t.Dict[str, t.Any]:
+        raise NotImplementedError
 
     @classmethod
-    def process_MintCharacter(self, request: OracleRequest) -> t.Dict[str, t.Any]:
+    def process_MintCharacter(self, request: OracleRequest) -> MintCharacterData:
         nums, signed_random = self.randomOrg.get_random_int_array(10, 0, 100)
 
         signed_random.request_id = request.id
@@ -48,4 +47,14 @@ class ProcessRandom:
             },
         }
 
-        PinataApi().pin_json()
+        response = PinataApi().pin_json(
+            "character_metadata" + str(request.request_parameters["characterId"]),
+            ipfs_json,
+        )
+
+        return MintCharacterData(
+            requestId=signed_random.request_id,
+            characterId=request.request_parameters["characterId"],
+            attributes=nums,
+            ipfsId=response.json()["IpfsHash"],
+        )

@@ -26,3 +26,5 @@ class TestPinataApi(TestCase):
             tags=tags,
             options=options,
         )
+
+        self.assertEqual(response.status_code, 200)
