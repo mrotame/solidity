@@ -9,11 +9,10 @@ import {Oracle} from "../oracle/Oracle.sol";
 import {ArcaneGold} from "./ArcaneGold.sol";
 
 contract ArcaneCharacters is ERC721{
-    Oracle oracle;
     ArcaneGold arcaneGold;
     uint public goldRequiredToMint  = 100;
 
-    mapping (uint tokenId => Character nft) nftMetadata;
+    mapping (uint tokenId => Character nft) public characterMetadata;
  
     struct Character {
         string metadata_url;
@@ -31,11 +30,11 @@ contract ArcaneCharacters is ERC721{
 
     constructor(address _oracleContract, address _arcaneGoldContract, address[] memory _admins) ERC721("Arcane Characters", "ARCH", 0, _admins) {
         arcaneGold = ArcaneGold(_arcaneGoldContract);
-        oracle = Oracle(_oracleContract);
+        oracleContract = _oracleContract;
     }
 
     function tokenURI(uint256 _tokenId) public view override returns (string memory) {
-        return string(nftMetadata[_tokenId].metadata_url);
+        return string(characterMetadata[_tokenId].metadata_url);
     }
 
     function requestMint() public payable{
@@ -45,12 +44,12 @@ contract ArcaneCharacters is ERC721{
         arcaneGold.burn(msg.sender, goldRequiredToMint);
         tokens[currentTokenId] = msg.sender;
 
-        oracle.generateCharacter{value:msg.value}(currentTokenId);
+        Oracle(oracleContract).generateCharacter{value:msg.value}(currentTokenId);
     }
 
-    function fulfillCharacterMintRequest(uint256 characterId, uint8[10] memory attributes, string memory ipfsId) public isOracle(msg.sender){
-        nftMetadata[characterId] = Character(
-            ipfsId,
+    function fulfillCharacterMintRequest(uint256 characterId, uint8[10] memory attributes, string memory ipfsUrl) public isOracle(msg.sender){
+        characterMetadata[characterId] = Character(
+            ipfsUrl,
             attributes[0],
             attributes[1],
             attributes[2], 
@@ -64,13 +63,10 @@ contract ArcaneCharacters is ERC721{
         );
     }
     
-    function updateOracleAddress(address oracleAddress) public isOwner(msg.sender) {
-        oracle = Oracle(oracleAddress);
+    function updateOracleAddress(address _oracleAddress) public isOwner(msg.sender) {
+        oracleContract = _oracleAddress;
     }
 
-    function getOracleAddress() public view isOwner(msg.sender) returns(address _oracleAddress) {
-        return address(oracle);
-    }
 
     function updateArcaneGoldAddress(address _arcaneGoldAddress) public isOwner(msg.sender) {
         arcaneGold = ArcaneGold(_arcaneGoldAddress);
@@ -83,6 +79,4 @@ contract ArcaneCharacters is ERC721{
     function updateGoldRequiredToMint(uint _newAmount) public isOwner(msg.sender) {
         goldRequiredToMint = _newAmount;
     }
-
-
 }

@@ -1,9 +1,11 @@
 import typing as t
 from unittest import TestCase
 from contextlib import contextmanager
+from random import randint
 
 import wake.testing as wt
 
+from pytypes.contracts.common.tokens.ERC20 import ERC20
 from pytypes.contracts.game.characters import ArcaneCharacters
 from pytypes.contracts.game.ArcaneGold import ArcaneGold
 from pytypes.contracts.oracle.Oracle import Oracle
@@ -84,8 +86,44 @@ class TestArcaneCharacters(TestCase):
             token.updateArcaneGoldAddress(arcaneGold.address)
             token.updateOracleAddress(oracle.address)
 
-            token.requestMint(from_=wt.Address(1), value=oracle.getbaseGasGweiFee())
+            request = token.requestMint(
+                from_=wt.Address(1), value=oracle.getbaseGasGweiFee()
+            )
+
+            self.assertIsInstance(request.events[0], ERC20.Burn)
+            self.assertIsInstance(request.events[1], Oracle.RequestCreated)
+            self.assertIsInstance(request.events[2], Oracle.MintCharacterParams)
 
     def test_fulfill_character_mint_request(self):
+        attributes = [randint(0, 100) for _ in range(10)]
         with get_token() as token:
-            pass
+            oracle: Oracle = Oracle.deploy([token.address])
+            wt.Account(1).balance = oracle.getbaseGasGweiFee()
+            arcaneGold: ArcaneGold = ArcaneGold.deploy([token.address])
+            arcaneGold.mint(wt.Address(1), token.goldRequiredToMint())
+            token.updateArcaneGoldAddress(arcaneGold.address)
+            token.updateOracleAddress(oracle.address)
+
+            request = token.requestMint(
+                from_=wt.Address(1), value=oracle.getbaseGasGweiFee()
+            )
+
+            token.fulfillCharacterMintRequest(
+                request.events[2].characterId,
+                attributes,
+                "test_url",
+                from_=oracle.address,
+            )
+            metadata = token.characterMetadata(1)
+
+            self.assertEqual(metadata.metadata_url, "test_url")
+            self.assertEqual(metadata.mining_power, attributes[0])
+            self.assertEqual(metadata.mining_speed, attributes[1])
+            self.assertEqual(metadata.chopping_power, attributes[2])
+            self.assertEqual(metadata.chopping_speed, attributes[3])
+            self.assertEqual(metadata.fishing_power, attributes[4])
+            self.assertEqual(metadata.fishing_speed, attributes[5])
+            self.assertEqual(metadata.fighting_power, attributes[6])
+            self.assertEqual(metadata.fighting_speed, attributes[7])
+            self.assertEqual(metadata.selling_power, attributes[8])
+            self.assertEqual(metadata.selling_speed, attributes[9])
