@@ -44,7 +44,7 @@ class TestArcaneCharacters(TestCase):
 
     def test_get_arcane_gold_address(self):
         with get_token() as token:
-            self.assertEqual(token.getArcaneGoldAddress(), wt.Address(1))
+            self.assertEqual(token.getArcaneGoldAddress(), wt.Address(2))
 
     def test_update_arcane_gold_address(self):
         with get_token() as token:

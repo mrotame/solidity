@@ -63,6 +63,10 @@ contract ArcaneCharacters is ERC721{
         );
     }
     
+    function getOracleAddress() public view returns(address) {
+        return oracleContract;
+    }
+
     function updateOracleAddress(address _oracleAddress) public isOwner(msg.sender) {
         oracleContract = _oracleAddress;
     }
