@@ -28,7 +28,7 @@ Openzeppelin is a Solidity library we use in many of our solidity contracts. It 
 a lot of utilities to make faster and safer to develop contracts
 
 1. Make sure there are no uncommited changes or untracked files in root dir
-2. run the following commands:
+2. run the following commands in the terminal:
 ```Bash
 forge install foundry-rs/forge-std
 forge install OpenZeppelin/openzeppelin-foundry-upgrades
