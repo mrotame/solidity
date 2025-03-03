@@ -20,6 +20,20 @@ the ETH blockchain in the dev environment.
 2. Update the terminal by running `source /home/otame/.zshenv` or start a new terminal session
 3. Install Foundry by running `foundryup`
 
+### Add openzeppelin to Foundry
+
+Docs Openzeppelin: https://docs.openzeppelin.com/upgrades-plugins/foundry-upgrades
+
+Openzeppelin is a Solidity library we use in many of our solidity contracts. It contains
+a lot of utilities to make faster and safer to develop contracts
+
+1. Make sure there are no uncommited changes or untracked files in root dir
+2. run the following commands:
+```Bash
+forge install foundry-rs/forge-std
+forge install OpenZeppelin/openzeppelin-foundry-upgrades
+forge install OpenZeppelin/openzeppelin-contracts-upgradeable
+```
 
 ### Poetry
 use poetry `poetry install --with dev` to install all the dependencies
