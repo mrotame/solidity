@@ -13,12 +13,12 @@ from loguru import logger
 
 from pytypes.contracts.oracle.Oracle import Oracle
 
-from src.oracle.common.utils import get_abi
-from src.oracle.process.monitoring import Monitoring
-from src.oracle.models.oracle_requests import OracleRequest
-from src.oracle.common.request_parameters import RequestType
-from src.oracle.models.oracle_metadata import OracleMetadata
-from src.oracle.process.process_random import ProcessRandom
+from oracle.common.utils import get_abi
+from oracle.process.monitoring import Monitoring
+from oracle.models.oracle_requests import OracleRequest
+from oracle.common.request_parameters import RequestType
+from oracle.models.oracle_metadata import OracleMetadata
+from oracle.process.process_random import ProcessRandom
 
 
 def get_abi(token) -> t.List[t.Dict[str, t.Any]]:

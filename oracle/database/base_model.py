@@ -8,7 +8,7 @@ import inspect
 from firebase_admin import firestore
 
 
-from src.oracle.database.connection import get_db_client
+from oracle.database.connection import get_db_client
 
 
 @dataclass

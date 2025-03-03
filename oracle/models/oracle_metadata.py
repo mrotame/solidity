@@ -2,8 +2,8 @@ import typing as t
 from dataclasses import dataclass, field
 from firebase_admin.firestore import firestore
 
-from src.oracle.database.base_model import BaseModel
-from src.oracle.database.connection import get_db_client
+from oracle.database.base_model import BaseModel
+from oracle.database.connection import get_db_client
 
 
 @dataclass

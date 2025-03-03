@@ -1,8 +1,8 @@
 import typing as t
 from dataclasses import dataclass, field
 
-from src.oracle.database.base_model import BaseModel
-from src.oracle.common import request_parameters as rp
+from oracle.database.base_model import BaseModel
+from oracle.common import request_parameters as rp
 
 
 @dataclass

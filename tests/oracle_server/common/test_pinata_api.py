@@ -1,7 +1,7 @@
 from unittest import TestCase
 from uuid import uuid4
 
-from src.oracle.common.pinata_api import PinataApi
+from oracle.common.pinata_api import PinataApi
 
 
 class TestPinataApi(TestCase):

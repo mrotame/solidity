@@ -5,8 +5,8 @@ from uuid import uuid4
 from rdoclient import RandomOrgClient as _RandomOrgClient
 from google.cloud.firestore_v1.client import CollectionReference, DocumentReference
 
-from src.oracle.database.connection import get_db_client
-from src.oracle.models.signed_random import SignedRandom
+from oracle.database.connection import get_db_client
+from oracle.models.signed_random import SignedRandom
 
 
 class RandomOrg:

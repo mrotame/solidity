@@ -1,7 +1,7 @@
 import typing as t
 from dataclasses import dataclass, field
 
-from src.oracle.database.base_model import BaseModel
+from oracle.database.base_model import BaseModel
 
 
 @dataclass

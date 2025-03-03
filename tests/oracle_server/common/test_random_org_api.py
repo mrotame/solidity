@@ -1,8 +1,8 @@
 from unittest import TestCase
 from random import randint
 
-from src.oracle.common.random_org_api import RandomOrg
-from src.oracle.models.signed_random import SignedRandom
+from oracle.common.random_org_api import RandomOrg
+from oracle.models.signed_random import SignedRandom
 
 
 class TestRandomOrgApi(TestCase):

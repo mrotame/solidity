@@ -3,8 +3,8 @@ import typing as t
 from web3 import Web3
 from web3.contract.contract import Contract, ContractEvent
 
-from src.oracle.models.oracle_requests import OracleRequest
-from src.oracle.common.request_parameters import RequestType
+from oracle.models.oracle_requests import OracleRequest
+from oracle.common.request_parameters import RequestType
 
 
 class Monitoring:

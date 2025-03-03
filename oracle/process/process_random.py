@@ -1,10 +1,10 @@
 import typing as t
 from dataclasses import dataclass
 
-from src.oracle.models.oracle_requests import OracleRequest
-from src.oracle.common.random_org_api import RandomOrg
-from src.oracle.common.characters_metadata import CharacterMetadata
-from src.oracle.common.pinata_api import PinataApi
+from oracle.models.oracle_requests import OracleRequest
+from oracle.common.random_org_api import RandomOrg
+from oracle.common.characters_metadata import CharacterMetadata
+from oracle.common.pinata_api import PinataApi
 
 
 class MintCharacterData(t.TypedDict):

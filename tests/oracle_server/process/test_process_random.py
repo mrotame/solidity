@@ -1,8 +1,8 @@
 from unittest import TestCase
 from random import randint
 
-from src.oracle.process.process_random import ProcessRandom
-from src.oracle.models.oracle_requests import OracleRequest
+from oracle.process.process_random import ProcessRandom
+from oracle.models.oracle_requests import OracleRequest
 
 
 class TestProcessRandom(TestCase):

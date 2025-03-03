@@ -3,7 +3,7 @@ from random import randint
 
 from unittest import TestCase
 
-from src.oracle.common.characters_metadata import CharacterMetadata, CHARACTER_CLASSES
+from oracle.common.characters_metadata import CharacterMetadata, CHARACTER_CLASSES
 
 
 class TestCharacterMetadata(TestCase):
